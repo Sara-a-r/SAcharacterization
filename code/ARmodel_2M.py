@@ -3,6 +3,8 @@ This code implements the ARMA model for a system constituted by 2 masses M1 and 
 and 2 springs K1 and K2. On the system acts a viscous friction force with a coefficient gamma.
 The spring in contact with the wall is forced by a sinusoidal force F=F0*sin(wt).
 The code returns the masses' position and speed (x1, x2, v1, v2) in time domain.
+
+Note = if you need you can save data.
 """
 
 
@@ -15,9 +17,13 @@ import matplotlib.pyplot as plt
 script_dir = os.getcwd()                         #define current dir
 main_dir = os.path.dirname(script_dir)           #go up of one directory
 results_dir = os.path.join(main_dir, "figure")   #define results dir
+data_dir = os.path.join(main_dir, "data")        #define data dir
 
 if not os.path.exists(results_dir):              #if the directory does not exist create it
     os.mkdir(results_dir)
+
+if not os.path.exists(data_dir):                 #if the directory does not exist create it
+    os.mkdir(data_dir)
 
 #--------------------------AR model------------------------#
 def AR_model(y, A, B, u):
@@ -45,7 +51,7 @@ def sin_function(t, F0, w):
     return F0 * np.sin(w*t)
 
 #--------------------------Temporal evolution----------------------#
-def evolution(evol_method, Nt_step, dt, physical_params, signal_params, F):
+def evolution(evol_method, Nt_step, dt, physical_params, signal_params, F, file_name = None):
     #-----------------Initialize the problem-------------------#
     tmax = dt * Nt_step                #total time of simulation
     tt = np.arange(0, tmax, dt)        #temporal grid
@@ -70,6 +76,12 @@ def evolution(evol_method, Nt_step, dt, physical_params, signal_params, F):
         v2.append(y_t[1])
         x1.append(y_t[2])
         x2.append(y_t[3])
+
+    #save simulation's data (if it's necessary)
+    if file_name is not None:
+        data = np.column_stack((tt, v1, v2, x1, x2))
+        np.savetxt(os.path.join(data_dir, file_name), data, header='time, v1, v2, x1, x2')
+
     return tt, np.array(v1), np.array(v2), np.array(x1), np.array(x2)
 
 
@@ -96,9 +108,10 @@ if __name__ == '__main__':
     physical_params = [gamma, M1, M2, K1, K2, dt]
     signal_params = [F0, w]
     simulation_params = [AR_model, Nt_step, dt]
-    tt, v1, v2, x1, x2 = evolution(*simulation_params, physical_params, signal_params, F)
+    tt, v1, v2, x1, x2 = evolution(*simulation_params, physical_params, signal_params, F, file_name ='data2M.txt')
 
     # --------------------------Plot results----------------------#
+    #fig = plt.figure(figsize=(12,10))
     plt.title('Time evolution for two coupled oscillators (AR model)')
     plt.xlabel('Time [s]')
     plt.ylabel('position [m]')
@@ -108,9 +121,10 @@ if __name__ == '__main__':
     plt.plot(tt, x1, linestyle='-', linewidth=1, marker='', color='steelblue', label='x1, mass M1')
     plt.plot(tt, x2, linestyle='-', linewidth=1, marker='', color='darkmagenta', label='x2, mass M2')
     plt.legend()
+    plt.tight_layout()
 
     #save the plot in the results dir
     out_name = os.path.join(results_dir, "SinResp_2M.png")
-    #plt.savefig(out_name)
+    plt.savefig(out_name)
     plt.show()
 
