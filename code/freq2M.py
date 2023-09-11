@@ -36,11 +36,10 @@ if __name__ == '__main__':
 
     #upload data
     tt, v1, v2, x1, x2 = np.loadtxt(os.path.join(data_dir, "data2M.txt"), unpack=True)
-    print(len(tt))
 
     #-----------------------------Compute FFT----------------------------#
     #compute the FFT
-    fs = 2                    #sampling frequency (fs>2fmax)
+    fs = 100                    #sampling frequency (fs>2fmax)
     freqs, Y1 = FFT(fs, x1)
     _, Y2 = FFT(fs, x2)
 
