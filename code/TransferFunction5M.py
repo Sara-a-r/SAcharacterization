@@ -26,16 +26,21 @@ if not os.path.exists(data_dir):                 #if the directory does not exis
     os.mkdir(data_dir)
 
 #-----------------------Transfer Function----------------------#
-def TransferFunc (w, M1, M2, M3, M4, M5, K1, K2, K3, K4, K5, gamma):
+def TransferFunc (w, M1, M2, M3, M4, M5, K1, K2, K3, K4, K5, g2, g3, g4, g5):
     #define the matrices of the system from the state-space equations
     Id = np.eye(5)
-    M = np.array([[-(K1+K2)/M1, K2/M1, 0, 0, 0],
-                 [K1/M2, -(K2+K3)/M2, K3/M2, 0, 0],
-                 [0, K3/M3, -(K3+K4)/M3, K4/M3, 0],
-                 [0, 0, K4/M4, -(K4+K5)/M4, K5/M4],
-                 [0, 0, 0, K5/M5, -K5/M5]])
-    A = np.block([[0*Id, M],
-                  [Id, 0*Id]])
+    V = np.array([[-(g2 / M1), g2 / M1, 0, 0, 0],
+                  [g2 / M2, -(g2 + g3) / M2, g3 / M2, 0, 0],
+                  [0, g3 / M3, -(g3 + g4) / M3, g4 / M3, 0],
+                  [0, 0, g4 / M4, -(g4 + g5) / M4, g5 / M4],
+                  [0, 0, 0, g5 / M5, -g5 / M5]])
+    X = np.array([[-(K1 + K2) / M1, K2 / M1, 0, 0, 0],
+                  [K1 / M2, -(K2 + K3) / M2, K3 / M2, 0, 0],
+                  [0, K3 / M3, -(K3 + K4) / M3, K4 / M3, 0],
+                  [0, 0, K4 / M4, -(K4 + K5) / M4, K5 / M4],
+                  [0, 0, 0, K5 / M5, -K5 / M5]])
+    A = np.block([[V, X],
+                  [Id, 0 * Id]])
 
     B = np.array((K1 / M1, 0, 0, 0, 0, 0, 0, 0, 0, 0))
     C = np.block([0*Id, Id])
@@ -68,12 +73,12 @@ if __name__ == '__main__':
     f = np.linspace(0,1e1,100000)
     w = 2*np.pi*f
     # define the parameters of the system
-    gamma = 0                       # viscous friction coeff [kg/m*s]
-    M = [10, 10, 10, 10, 10]        # filter mass [Kg]
-    K = [1, 1, 1, 1, 1]             # spring constant [N/m]
+    gamma = [0.5, 0.5, 0.5, 0.5]              # viscous friction coeff [kg/m*s]
+    M = [10, 10, 10, 10, 10]                  # filter mass [Kg]
+    K = [1, 1, 1, 1, 1]                       # spring constant [N/m]
 
     # compute the transfer function
-    Tf = TransferFunc(w, *M, *K, gamma)
+    Tf = TransferFunc(w, *M, *K, *gamma)
     # compute the magnitude of the transfer function
     H = (np.real(Tf)**2+np.imag(Tf)**2)**1/2
 
@@ -82,8 +87,8 @@ if __name__ == '__main__':
 
     # --------------------------Plot results----------------------#
     #fig = plt.figure(figsize=(10, 7))
-    plt.title('Transfer function for coupled oscillators \n M$_1$=%d, M$_2$=%d, M$_3$=%d, M$_4$=%d, M$_5$=%d, K$_1$=%d,'
-              'K$_2$=%d, K$_3$=%d, K$_4$=%d, K$_5$=%d, $\gamma$=%.1f' % (M[0],M[1], M[2], M[3], M[4],K[0], K[1], K[2], K[3], K[4],gamma),
+    plt.title('Transfer function of coupled oscillators \n M$_1$=%d, M$_2$=%d, M$_3$=%d, M$_4$=%d, M$_5$=%d, K$_1$=%d,'
+              'K$_2$=%d, K$_3$=%d, K$_4$=%d, K$_5$=%d, $\gamma$=%.1f' % (M[0],M[1], M[2], M[3], M[4],K[0], K[1], K[2], K[3], K[4],gamma[0]),
               size=11)
     plt.xlabel('f [Hz]')
     plt.ylabel('|x$_{out}$/x$_0$|')
