@@ -27,21 +27,26 @@ if not os.path.exists(data_dir):                 #if the directory does not exis
 
 #--------------------------AR model------------------------#
 def AR_model(y, A, B, u):
-    return A @ y + B * u  #nd array of y at instant n+1
+    return A @ y + B * u  # nd array of y at instant n+1
 
 #--------------------------Right Hand Side------------------------#
-def matrix(gamma, M1, M2, M3, M4, M5, K1, K2, K3, K4, K5, dt):
-    #defne the matrices A and B
+def matrix(M1, M2, M3, M4, M5, K1, K2, K3, K4, K5, g2, g3, g4, g5, dt):
+    # defne the matrices A and B
     Id = np.eye(5)
-    M = dt * np.array([[-(K1+K2)/M1, K2/M1, 0, 0, 0],
+    V = np.array([[1-(dt*g2/M1), dt*g2/M1, 0, 0, 0],
+                       [dt*g2/M2, 1-dt*(g2+g3)/M2, dt*g3/M2, 0, 0],
+                       [0, dt*g3/M3, 1-dt*(g3+g4)/M3, dt*g4/M3, 0],
+                       [0, 0, dt*g4/M4, 1-dt*(g4+g5)/M4, dt*g5/M4],
+                       [0, 0, 0, dt*g5/M5, 1-dt*g5/M5]])
+    X = dt * np.array([[-(K1+K2)/M1, K2/M1, 0, 0, 0],
                        [K1/M2, -(K2+K3)/M2, K3/M2, 0, 0],
                        [0, K3/M3, -(K3+K4)/M3, K4/M3, 0],
                        [0, 0, K4/M4, -(K4+K5)/M4, K5/M4],
                        [0, 0, 0, K5/M5, -K5/M5]])
-    A = np.block([[Id, M],
+    A = np.block([[V, X],
                   [dt*Id, Id]])
 
-    B = np.array((dt/M1,0, 0, 0, 0, 0, 0, 0, 0, 0))
+    B = np.array((dt*K1/M1,0, 0, 0, 0, 0, 0, 0, 0, 0))
     return A, B
 #----------------------------Step function------------------------#
 def step_function(t, t0=0):
@@ -54,23 +59,23 @@ def sin_function(t, F0, w):
 #--------------------------Temporal evolution----------------------#
 def evolution(evol_method, Nt_step, dt, physical_params, signal_params, F, file_name = None):
     #-----------------Initialize the problem-------------------#
-    tmax = dt * Nt_step                                  #total time of simulation
-    tt = np.arange(0, tmax, dt)                          #temporal grid
-    y0 = np.array((0, 0, 0, 0, 0, 0, 0, 0, 0, 0))        #initial condition
-    y_t = np.copy(y0)                                    #create a copy to evolve it in time
-    F_signal = F(tt, *signal_params)                     #external force applied to the system in time
+    tmax = dt * Nt_step                                  # total time of simulation
+    tt = np.arange(0, tmax, dt)                          # temporal grid
+    y0 = np.array((0, 0, 0, 0, 0, 0, 0, 0, 0, 0))        # initial condition
+    y_t = np.copy(y0)                                    # create a copy to evolve it in time
+    F_signal = F(tt, *signal_params)                     # external force applied to the system in time
     #----------------------------------------------------------#
 
     #----------------------Time evolution----------------------#
-    v1, v2, v3, v4, v5 = [[], [], [], [], []]      #initialize list of v values
+    v1, v2, v3, v4, v5 = [[], [], [], [], []]      # initialize list of v values
     x1, x2, x3, x4, x5 = [[], [], [], [], []]      # initialize list of x values
 
-    #compute the matrices of the system
+    # compute the matrices of the system
     A, B = matrix(*physical_params)
 
-    #temporal evolution when the ext force is applied
+    # temporal evolution when the ext force is applied
     for Fi in F_signal:
-        y_t = evol_method(y_t, A, B, Fi)   #step n+1
+        y_t = evol_method(y_t, A, B, Fi)   # step n+1
         v1.append(y_t[0])
         v2.append(y_t[1])
         v3.append(y_t[2])
@@ -82,7 +87,7 @@ def evolution(evol_method, Nt_step, dt, physical_params, signal_params, F, file_
         x4.append(y_t[8])
         x5.append(y_t[9])
 
-    #save simulation's data (if it's necessary)
+    # save simulation's data (if it's necessary)
     if file_name is not None:
         data = np.column_stack((tt, v1, v2, v3, v4, v5, x1, x2, x3, x4, x5))
         np.savetxt(os.path.join(data_dir, file_name), data, header='time, v1, v2, v3, v4, v5, x1, x2, x3, x4, x5')
@@ -92,31 +97,31 @@ def evolution(evol_method, Nt_step, dt, physical_params, signal_params, F, file_
 
 if __name__ == '__main__':
 
-    #Parameters of the simulation
+    # Parameters of the simulation
     Nt_step = 1e6     #temporal steps
     dt = 1e-3         #temporal step size
 
-    #Parameters of the system
-    gamma = 0                       #viscous friction coeff [kg/m*s]
-    M = [10, 10, 10, 10, 10]        #filter mass [Kg]  [M1, M2, M3, M4, M5]
-    K = [1, 1, 1, 1, 1]             #spring constant [N/m]  [K1, K2, K3, K4, K5]
-    t0 = 0                          #parameter of the step function [s]
-    F0 = 1                          #amplitude of the external force
-    w = 10                          #f of the ext force
+    # Parameters of the system
+    gamma = [0.5, 0.5, 0.5, 0.5]            # viscous friction coeff [kg/m*s]
+    M = [100, 150, 80, 100, 70]        # filter mass [Kg]  [M1, M2, M3, M4, M5]
+    K = [10, 5, 50, 8, 20]             # spring constant [N/m]  [K1, K2, K3, K4, K5]
+    t0 = 0                          # parameter of the step function [s]
+    F0 = 1                           # amplitude of the external force #Note : consider also the coeff in B
+    w = 10                          # f of the ext force
 
-    #Signal applied to the system
+    # Signal applied to the system
     F = sin_function
 
-    #Simulation
-    physical_params = [gamma, *M, *K, dt]
+    # Simulation
+    physical_params = [*M, *K, *gamma, dt]
     signal_params = [F0, w]
     simulation_params = [AR_model, Nt_step, dt]
     tt, v1, v2, v3, v4, v5, x1, x2, x3, x4, x5 = evolution(*simulation_params,
-                                        physical_params, signal_params, F, file_name ='5M5Ksimulation.txt')
+                                        physical_params, signal_params, F, file_name ='5M5KGsimulation4.txt')
 
     # --------------------------Plot results----------------------#
     #fig = plt.figure(figsize=(12,10))
-    plt.title('Time evolution for two coupled oscillators (AR model)')
+    plt.title('Time evolution for five coupled oscillators (AR model)')
     plt.xlabel('Time [s]')
     plt.ylabel('position [m]')
     plt.grid(True)
@@ -128,7 +133,7 @@ if __name__ == '__main__':
     plt.tight_layout()
 
     #save the plot in the results dir
-    out_name = os.path.join(results_dir, "SinResp_2M.png")
+    #out_name = os.path.join(results_dir, "SinResp_5M5Kgamma.png")
     #plt.savefig(out_name)
     plt.show()
 
