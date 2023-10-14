@@ -2,7 +2,7 @@
 This code implements the ARMA model for a system composed by 2 masses M1 and M2
 and 2 springs K1 and K2. On the system acts a viscous friction force with a coefficient gamma.
 In this code is used PID control to control the system variables, so there is a control force
-acting on the first masse.
+acting on the first mass.
 
 Note = if you need you can save data.
 """
@@ -34,7 +34,7 @@ def matrix(gamma, M1, M2, K1, K2, dt):
 
     #defne the rows of the matrix A
     A_row1 = [1-(dt*gamma/M1), dt*gamma/M1, -dt*(K1+K2)/M1, dt*K2/M1]
-    A_row2 = [dt*gamma/M2, 1-(dt*gamma/M2), dt*K2/M2, -dt*K2/M2 ]
+    A_row2 = [dt*gamma/M2, 1-(dt*gamma/M2), dt*K2/M2, -dt*K2/M2]
     A_row3 = [dt, 0, 1, 0]
     A_row4 = [0, dt, 0, 1]
 
@@ -51,8 +51,6 @@ def evolution(evol_method, Nt_step, dt, physical_params, ref, kp, ki, kd, file_n
     y0 = np.array((0, 0, 1, 0.5))      #initial condition
     y_t = np.copy(y0)                  #create a copy to evolve it in time
 
-    #----------------------------------------------------------#
-
     #----------------------Time evolution----------------------#
     v1 = []      #initialize list of v1 value
     v2 = []      # initialize list of v2 value
@@ -66,7 +64,7 @@ def evolution(evol_method, Nt_step, dt, physical_params, ref, kp, ki, kd, file_n
     err_t = []  # list for memorizing the value of the error
     F = 0       # PID term
     I = 0
-    j = 0
+    j = 0       #cycle index
 
     #temporal evolution when the ext (control) force is applied
     for t in tt:
@@ -108,7 +106,7 @@ if __name__ == '__main__':
 
     #Parameters of control
     ref = 0                                     # reference signal for x1
-    control_params_PID = [ref, 5, 0.2, 0.3]     # ref, kp, ki, kd
+    control_params_PID = [ref, 150, 0.8, 150]     # ref, kp, ki, kd
 
     #Simulation
     physical_params = [gamma, M1, M2, K1, K2, dt]
@@ -117,7 +115,8 @@ if __name__ == '__main__':
 
     # --------------------------Plot results----------------------#
     #fig = plt.figure(figsize=(12,10))
-    plt.title('Control system for two coupled oscillators')
+    plt.title('PID control for two coupled oscillators \n x$_1^{ref}$=%.1f, k$_p$=%.1f, k$_i$=%.1f, k$_d$=%.1f'
+              %(control_params_PID[0], control_params_PID[1], control_params_PID[2], control_params_PID[3]), size=11)
     plt.xlabel('Time [s]')
     plt.ylabel('position [m]')
     plt.grid(True)
