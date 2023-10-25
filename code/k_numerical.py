@@ -25,20 +25,20 @@ if __name__ == '__main__':
     M = [173, 165, 140, 118, 315]  # M1, M2, M3, M4, M5
 
     # define normal frequencies of the system
-    f_normal = np.array([0.11, 0.16, 0.38, 0.54, 0.87])
+    f_normal = np.array([0.11, 0.35, 0.53, 0.87, 1.1])
     w_normal = 2 * np.pi * f_normal
 
     # define initial values for K
     initial_K = np.array([1, 1, 1, 1, 1])
 
     # set the bounds of the variables (K must be positive)
-    bounds = [(0.1, 10000)] * 5
+    bounds = [(0, 20000)] * 5
 
     # numerical resolution
     #result = minimize(lambda K: np.linalg.norm(determinant_equation(K, M, w_normal)),
-    #                  initial_K, method='SLSQP',bounds=bounds, options={'maxiter':1000})
+    #                  initial_K, method='SLSQP')#,bounds=bounds, options={'maxiter':1000})
 
-    result = dual_annealing(lambda K: np.linalg.norm(determinant_equation(K, M, w_normal)), bounds, x0=initial_K)
+    result = dual_annealing(lambda K: np.linalg.norm(determinant_equation(K, M, w_normal)), bounds, seed=100)
 
     solutions = result.x
 
