@@ -1,5 +1,22 @@
 # Folder for personal tests (i.e. notebooks or python scripts)
 data/
+code/SaStudies/LVDT0
+code/SaStudies/LVDT1
+code/SaStudies/LVDT2
+code/SaStudies/LVDT3
+code/SaStudies/LVDT4
+code/SaStudies/LVDT5
+code/SaStudies/LVDT_t0
+code/SaStudies/LVDT_t1
+code/SaStudies/LVDT_t2
+code/SaStudies/LVDT_t3
+code/SaStudies/LVDT_t4
+code/SaStudies/LVDT_t5
+code/SaStudies/PCA0
+code/SaStudies/PCA1
+code/SaStudies/PCA2
+code/SaStudies/PCA3
+code/SaStudies/PCA4
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
