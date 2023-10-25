@@ -74,9 +74,9 @@ if __name__ == '__main__':
     w = 2*np.pi*f
     # define the parameters of the system
     gamma = [0.5, 0.5, 0.5, 0.5]              # viscous friction coeff [kg/m*s]
-    M = [10, 10, 10, 10, 10]                  # filter mass [Kg]
-    K = [1, 1, 1, 1, 1]                       # spring constant [N/m]
-
+    M = [173, 165, 140, 118, 315]                  # filter mass [Kg]
+    K = [ 240.1762472, 1591.49007496, 1765.26873492,  309.85508443, 3920.7499088 ]                     # spring constant [N/m]
+    #K = [702.63612454,  859.32565959, 2623.82233935, 1424.4203582,  1968.15021859]
     # compute the transfer function
     Tf = TransferFunc(w, *M, *K, *gamma)
     # compute the magnitude of the transfer function
