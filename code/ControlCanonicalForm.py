@@ -40,7 +40,7 @@ def matrices (M1, M2, M3, M4, M5, K1, K2, K3, K4, K5, g2, g3, g4, g5):
 
     return A, B, C, D
 
-#-------------------------------Control Matrix--------------------------#
+#---------------------------Controllability Matrix------------------------#
 def ctrl_martix(A, B):
     n = A.shape[0]
     Ctrl = B
@@ -48,6 +48,23 @@ def ctrl_martix(A, B):
         Ctrl = np.hstack((Ctrl, np.linalg.matrix_power(A,i) @ B))
 
     return Ctrl
+
+#--------------------Control Canonical Form---------------------#
+def matrices_c(Ctrl, A, B, C, D):
+    n = A.shape[0]
+    # compute the transformation matrix
+    t_n = np.array([0,0,0,0,0,0,0,0,0,1]) @ np.linalg.inv(Ctrl)
+    T_inv = t_n @ np.linalg.matrix_power(A,n-1)    #first row of T_inv matrix
+    for i in range(2,n+1):
+        T_inv = np.vstack((T_inv,t_n @ np.linalg.matrix_power(A,n-i)))
+
+    # compute the matrices in control canonical form
+    Ac = T_inv @ A @ np.linalg.inv(T_inv)
+    Bc = T_inv @ B
+    Cc = C @ np.linalg.inv(T_inv)
+    Dc = D
+    return Ac, Bc, Cc, Dc
+
 
 if __name__ == '__main__':
     # define the parameters of the system
@@ -67,3 +84,10 @@ if __name__ == '__main__':
     else:
         print("The system is not fully controllable.")
 
+    # compute matrices in control canonical form
+    Ac, Bc, Cc, Dc = matrices_c(Ctrl, A, B, C, D)
+
+    print("A_c = \n", Ac)
+    print("B_c = \n", Bc)
+    print("C_c = \n", Cc)
+    print("D_c = \n", Dc)
