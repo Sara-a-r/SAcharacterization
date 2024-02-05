@@ -43,7 +43,7 @@ def psd_plots(frvect, ch, nperseg, iplot):
     yl1 = [5.e-4, yl[1]]
     ax.set_ylim(yl1)
 
-    ax.set_xlabel('Frequency Hz')
+    ax.set_xlabel('Frequency [Hz]')
     axLVDT.loglog(f, np.sqrt(Pxx) * 100.**(-iplot), label=chname)
 
 #--------------------------Covariance matrix-------------------------#
@@ -110,7 +110,7 @@ if __name__ == '__main__':
 
         axLVDT.grid(which='both', axis='both')
         axLVDT.set_xlim([1.e-2, 5.e0])
-        axLVDT.set_xlabel('Frequency Hz')
+        axLVDT.set_xlabel('Frequency [Hz]')
         yl = axLVDT.get_ylim()
         yl1 = [5.e-14, yl[1]]
         axLVDT.set_ylim(yl1)
@@ -171,7 +171,7 @@ if __name__ == '__main__':
             chname = 'U' + '{}'.format(iU)
             ax.set_ylabel(chname + ' ' + units)
             ax.set_ylim([5.e-5, 5.e0])
-            ax.set_xlabel('Frequency Hz')
+            ax.set_xlabel('Frequency [Hz]')
 
             axPCA.loglog(f, np.sqrt(Pxx) * 100.**(-iU), label='U' + '{}'.format(iU))    #figure PCA
 
@@ -181,7 +181,7 @@ if __name__ == '__main__':
         yl = axPCA.get_ylim()
         yl1 = [5.e-15, yl[1]]
         axPCA.set_ylim(yl1)
-        axPCA.set_xlabel('Frequency Hz')
+        axPCA.set_xlabel('Frequency [Hz]')
         axPCA.legend()
 
         #------------------seism transfer functions--------------#
@@ -194,7 +194,7 @@ if __name__ == '__main__':
             f, Pxy = signal.csd(seism, sa[ch][2000:], fs=fs, window='hann', nperseg=nperseg)
             Pxy = Pxy / (1.j * 2. * np.pi * f)
             ###
-            data = np.column_stack((f,np.sqrt(np.abs(Pxy))))
+            #data = np.column_stack((f,np.sqrt(np.abs(Pxy))))
             #np.savetxt('TF ' + list[i], data)
             i = i+1
             ####
@@ -207,13 +207,13 @@ if __name__ == '__main__':
             yl1 = [1.e-3, yl[1]]
             axTF[0].set_ylim(yl1)
             axTF[0].grid(which='both', axis='both')
-            axTF[0].set_xlim([1.e-1, 3.e0])
+            axTF[0].set_xlim([0.5e-1, 3.e0])
             axTF[1].grid(which='both', axis='both')
-            axTF[1].set_xlim([1.e-1, 3.e0])
-            axTF[1].set_ylim([-3.5, 3.5])
+            axTF[1].set_xlim([0.5e-1, 3.e0])
+            axTF[1].set_ylim([-4, 4])
             axTF[2].grid(which='both', axis='both')
-            axTF[2].set_xlim([1.e-1, 3.e0])
+            axTF[2].set_xlim([0.5e-1, 3.e0])
             axTF[2].set_ylim([0., 1.])
-            axTF[2].set_xlabel('Frequency Hz')
+            axTF[2].set_xlabel('Frequency [Hz]')
 
     plt.show()
