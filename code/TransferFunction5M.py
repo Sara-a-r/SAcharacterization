@@ -35,7 +35,7 @@ def TransferFunc (w, M1, M2, M3, M4, M5, K1, K2, K3, K4, K5, g2, g3, g4, g5):
                   [0, 0, g4 / M4, -(g4 + g5) / M4, g5 / M4],
                   [0, 0, 0, g5 / M5, -g5 / M5]])
     X = np.array([[-(K1 + K2) / M1, K2 / M1, 0, 0, 0],
-                  [K1 / M2, -(K2 + K3) / M2, K3 / M2, 0, 0],
+                  [K2 / M2, -(K2 + K3) / M2, K3 / M2, 0, 0],
                   [0, K3 / M3, -(K3 + K4) / M3, K4 / M3, 0],
                   [0, 0, K4 / M4, -(K4 + K5) / M4, K5 / M4],
                   [0, 0, 0, K5 / M5, -K5 / M5]])
@@ -73,10 +73,10 @@ if __name__ == '__main__':
     f = np.linspace(0,1e1,100000)
     w = 2*np.pi*f
     # define the parameters of the system
-    gamma = [0.5, 0.5, 0.5, 0.5]              # viscous friction coeff [kg/m*s]
+    gamma = [5, 5, 5, 5]              # viscous friction coeff [kg/m*s]
     M = [173, 165, 140, 118, 315]                  # filter mass [Kg]
-    K = [ 240.1762472, 1591.49007496, 1765.26873492,  309.85508443, 3920.7499088 ]                     # spring constant [N/m]
-    #K = [702.63612454,  859.32565959, 2623.82233935, 1424.4203582,  1968.15021859]
+    #K = [2670.99070426, 3414.09117804, 1203.36935527,  698.12050824, 5931.526684  ]                    # spring constant [N/m]
+    K = [ 985.25636417,  689.82114635, 2797.18502596, 1282.4743156,  1989.76555735]
     # compute the transfer function
     Tf = TransferFunc(w, *M, *K, *gamma)
     # compute the magnitude of the transfer function

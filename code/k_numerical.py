@@ -4,7 +4,7 @@ from scipy.optimize import minimize, root, fsolve, newton_krylov, dual_annealing
 #-----------------------------A matrix---------------------------#
 def matrix_A(K, M1, M2, M3, M4, M5):
     A = np.array([[-(K[0] + K[1]) / M1, K[1] / M1, 0, 0, 0],
-                  [K[0] / M2, -(K[1] + K[2]) / M2, K[2] / M2, 0, 0],
+                  [K[1] / M2, -(K[1] + K[2]) / M2, K[2] / M2, 0, 0],
                   [0, K[2] / M3, -(K[2] + K[3]) / M3, K[3] / M3, 0],
                   [0, 0, K[3] / M4, -(K[3] + K[4]) / M4, K[4] / M4],
                   [0, 0, 0, K[4] / M5, -K[4] / M5]])
@@ -38,7 +38,7 @@ if __name__ == '__main__':
     #result = minimize(lambda K: np.linalg.norm(determinant_equation(K, M, w_normal)),
     #                  initial_K, method='SLSQP')#,bounds=bounds, options={'maxiter':1000})
 
-    result = dual_annealing(lambda K: np.linalg.norm(determinant_equation(K, M, w_normal)), bounds, seed=100)
+    result = dual_annealing(lambda K: np.linalg.norm(determinant_equation(K, M, w_normal)), bounds, seed=1)
 
     solutions = result.x
 

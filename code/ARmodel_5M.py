@@ -39,7 +39,7 @@ def matrix(M1, M2, M3, M4, M5, K1, K2, K3, K4, K5, g2, g3, g4, g5, dt):
                        [0, 0, dt*g4/M4, 1-dt*(g4+g5)/M4, dt*g5/M4],
                        [0, 0, 0, dt*g5/M5, 1-dt*g5/M5]])
     X = dt * np.array([[-(K1+K2)/M1, K2/M1, 0, 0, 0],
-                       [K1/M2, -(K2+K3)/M2, K3/M2, 0, 0],
+                       [K2/M2, -(K2+K3)/M2, K3/M2, 0, 0],
                        [0, K3/M3, -(K3+K4)/M3, K4/M3, 0],
                        [0, 0, K4/M4, -(K4+K5)/M4, K5/M4],
                        [0, 0, 0, K5/M5, -K5/M5]])
@@ -103,8 +103,8 @@ if __name__ == '__main__':
 
     # Parameters of the system
     gamma = [0.5, 0.5, 0.5, 0.5]            # viscous friction coeff [kg/m*s]
-    M = [100, 150, 80, 100, 70]        # filter mass [Kg]  [M1, M2, M3, M4, M5]
-    K = [10, 5, 50, 8, 20]             # spring constant [N/m]  [K1, K2, K3, K4, K5]
+    M = [10, 10, 10, 10, 10]        # filter mass [Kg]  [M1, M2, M3, M4, M5]
+    K = [1, 1, 1, 1, 1]             # spring constant [N/m]  [K1, K2, K3, K4, K5]
     t0 = 0                          # parameter of the step function [s]
     F0 = 1                           # amplitude of the external force #Note : consider also the coeff in B
     w = 10                          # f of the ext force
