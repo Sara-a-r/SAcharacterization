@@ -76,7 +76,7 @@ if __name__ == '__main__':
     f = np.linspace(2e-2,0.3e1,10000)
     w = 2*np.pi*f
     # define the parameters of the system
-    gamma = [5, 5, 5, 5, 5]              # viscous friction coeff [kg/m*s]
+    gamma = [0.5, 0.5, 0.5, 0.5, 0.5]              # viscous friction coeff [kg/m*s]
     M = [173, 165, 140, 118, 315, 125]                  # filter mass [Kg]
     #K = [ 838.51618646,  499.58207746, 3448.29305782, 1415.43182219, 5142.57056911, 1795.7055066 ]                 # spring constant [N/m]
     K = [1623.75124242, 3706.96969851, 600.49266591, 4223.06657828, 1161.6710071, 1598.0074804 ]

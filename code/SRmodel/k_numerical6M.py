@@ -39,7 +39,7 @@ if __name__ == '__main__':
     #result = minimize(lambda K: np.linalg.norm(determinant_equation(K, M, w_normal)),
     #                  initial_K, method='SLSQP')#,bounds=bounds, options={'maxiter':1000})
 
-    result = dual_annealing(lambda K: np.linalg.norm(determinant_equation(K, M, w_normal)), bounds, seed=10)
+    result = dual_annealing(lambda K: np.linalg.norm(determinant_equation(K, M, w_normal)), bounds, seed=1)
 
     solutions = result.x
 
