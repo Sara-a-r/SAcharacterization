@@ -11,6 +11,7 @@ Note = if you need you can save data.
 import os
 import numpy as np
 import matplotlib.pyplot as plt
+from scipy import signal
 
 #--------------------Setup the main directories------------------#
 #Define the various directories
@@ -63,7 +64,7 @@ def evolution(evol_method, Nt_step, dt, physical_params, signal_params, F, file_
     #-----------------Initialize the problem-------------------#
     tmax = dt * Nt_step                                  # total time of simulation
     tt = np.arange(0, tmax, dt)                          # temporal grid
-    y0 = np.array((0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0))  # initial condition
+    y0 = np.array((0, 0, 0, 0, 0, 0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6))  # initial condition
     y_t = np.copy(y0)                                    # create a copy to evolve it in time
     F_signal = F(tt, *signal_params)                     # external force applied to the system in time
     #----------------------------------------------------------#
@@ -76,7 +77,10 @@ def evolution(evol_method, Nt_step, dt, physical_params, signal_params, F, file_
     A, B = matrix(*physical_params)
 
     # temporal evolution when the ext force is applied
-    for Fi in F_signal:
+    i = 0
+    for t in tt:
+        Fi = F_signal[i]
+        i = i + 1
         y_t = evol_method(y_t, A, B, Fi)   # step n+1
         v1.append(y_t[0])
         v2.append(y_t[1])
@@ -89,7 +93,7 @@ def evolution(evol_method, Nt_step, dt, physical_params, signal_params, F, file_
         x3.append(y_t[8])
         x4.append(y_t[9])
         x5.append(y_t[10])
-        v6.append(y_t[11])
+        x6.append(y_t[11])
 
     # save simulation's data (if it's necessary)
     if file_name is not None:
@@ -103,16 +107,16 @@ def evolution(evol_method, Nt_step, dt, physical_params, signal_params, F, file_
 if __name__ == '__main__':
 
     # Parameters of the simulation
-    Nt_step = 1e6     #temporal steps
+    Nt_step = 5e5     #temporal steps
     dt = 1e-3         #temporal step size
 
     # Parameters of the system
-    gamma = [5, 5, 5, 5, 5]                    # viscous friction coeff [kg/m*s]
+    gamma = [4, 4, 4, 4, 4]                    # viscous friction coeff [kg/m*s]
     M = [173, 165, 140, 118, 315, 125]                   # filter mass [Kg]  [M1, M2, M3, M4, M7, Mpayload]
     K = [1623.75124242, 3706.96969851, 600.49266591,
          4223.06657828, 1161.6710071, 1598.0074804]      # spring constant [N/m]  [K1, K2, K3, K4, K5, K6]
     t0 = 0                                               # parameter of the step function [s]
-    F0 = 1                                               # amplitude of the external force #Note : consider also the coeff in B
+    F0 = 0                                               # amplitude of the external force #Note : consider also the coeff in B
     w = 10                                               # f of the ext force
 
     # Signal applied to the system
@@ -125,22 +129,61 @@ if __name__ == '__main__':
     tt, v1, v2, v3, v4, v5, v6, x1, x2, x3, x4, x5, x6 = evolution(*simulation_params,
                                         physical_params, signal_params, F, file_name = None)
 
+    # calculate the differences (signal similar to the LVDT)
+    x0 = np.zeros(len(x1))
+    l1 = x1 - x0    #F0_LVDT
+    l2 = x2 - x1    #F1_LVDT
+    l3 = x3 - x2    #F2_LVDT
+    l4 = x4 - x3    #F3_LVDT
+    l5 = x5 - x4    #F4_LVDT
+    l7 = x5 - x0    #F7_LVDT
+
+    #--------------------------------PSD---------------------------------#
+    #nperseg = 2 ** 20
+    #f, Pxx0 = signal.welch(l1, fs=1 / dt, window='hann', nperseg=nperseg)
+    #_, Pxx1 = signal.welch(l2, fs=1 / dt, window='hann', nperseg=nperseg)
+    #_, Pxx2 = signal.welch(l3, fs=1 / dt, window='hann', nperseg=nperseg)
+    #_, Pxx3 = signal.welch(l4, fs=1 / dt, window='hann', nperseg=nperseg)
+    #_, Pxx4 = signal.welch(l5, fs=1 / dt, window='hann', nperseg=nperseg)
+    #_, Pxx7 = signal.welch(l7, fs=1 / dt, window='hann', nperseg=nperseg)
 
     # --------------------------Plot results----------------------#
     #fig = plt.figure(figsize=(12,10))
     plt.title('Time evolution for SR (AR model)')
     plt.xlabel('Time [s]')
-    plt.ylabel('position [m]')
+    plt.ylabel('$\Delta x$ [m]')
     plt.grid(True)
     plt.minorticks_on()
 
-    plt.plot(tt, x1, linestyle='-', linewidth=1, marker='', color='steelblue', label='x1, mass M1')
-    plt.plot(tt, x5, linestyle='-', linewidth=1, marker='', color='darkmagenta', label='x5, mass M5')
+    plt.plot(tt, l1, linestyle='-', linewidth=1, marker='', color='steelblue', label='l1, F0_LVDT')
+    plt.plot(tt, l2, linestyle='-', linewidth=1, marker='', color='black', label='l2, F1_LVDT')
+    plt.plot(tt, l3, linestyle='-', linewidth=1, marker='', color='red', label='l3, F2_LVDT')
+    plt.plot(tt, l4, linestyle='-', linewidth=1, marker='', color='green', label='l4, F3_LVDT')
+    plt.plot(tt, l5, linestyle='-', linewidth=1, marker='', color='darkmagenta', label='l5, F4_LVDT')
+    plt.plot(tt, l7, linestyle='-', linewidth=1, marker='', color='pink', label='l7, F7_LVDT')
     plt.legend()
-    plt.tight_layout()
+    #plt.tight_layout()
+
+    plt.show()
+
+    #------------------ASD plot----------------------------#
+    #plt.xlabel('Frequency [Hz]')
+    #plt.ylabel('ASD [m/$\sqrt{Hz}$]')
+    #plt.yscale('log')
+    #plt.xscale('log')
+    #plt.grid(True)
+    #plt.minorticks_on()
+
+    #plt.plot(f, np.sqrt(Pxx0), linestyle='-', linewidth=1, marker='', color='steelblue', label='l1, F0_LVDT')
+    #plt.plot(f, np.sqrt(Pxx1), linestyle='-', linewidth=1, marker='', color='black', label='l2, F1_LVDT')
+    #plt.plot(f, np.sqrt(Pxx2), linestyle='-', linewidth=1, marker='', color='red', label='l3, F2_LVDT')
+    #plt.plot(f, np.sqrt(Pxx3), linestyle='-', linewidth=1, marker='', color='green', label='l4, F3_LVDT')
+    #plt.plot(f, np.sqrt(Pxx4), linestyle='-', linewidth=1, marker='', color='darkmagenta', label='l5, F4_LVDT')
+    #plt.plot(f, np.sqrt(Pxx7), linestyle='-', linewidth=1, marker='', color='pink', label='l7, F7_LVDT')
+    #plt.legend()
 
     #save the plot in the results dir
     #out_name = os.path.join(results_dir, "SinResp_5M5Kgamma.png")
     #plt.savefig(out_name)
-    plt.show()
+    #plt.show()
 

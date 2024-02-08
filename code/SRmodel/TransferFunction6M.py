@@ -73,13 +73,13 @@ def Bode(Tf):
 
 if __name__ == '__main__':
     # create an array of frequencies
-    f = np.linspace(2e-2,0.3e1,10000)
+    f = np.linspace(2e-2,0.4e1,100000)
     w = 2*np.pi*f
     # define the parameters of the system
-    gamma = [0.5, 0.5, 0.5, 0.5, 0.5]              # viscous friction coeff [kg/m*s]
-    M = [173, 165, 140, 118, 315, 125]                  # filter mass [Kg]
+    gamma = [4, 4, 4, 4, 4]              # viscous friction coeff [kg/m*s]
+    M = [160, 155, 135, 128, 400, 125]                  # filter mass [Kg]
     #K = [ 838.51618646,  499.58207746, 3448.29305782, 1415.43182219, 5142.57056911, 1795.7055066 ]                 # spring constant [N/m]
-    K = [1623.75124242, 3706.96969851, 600.49266591, 4223.06657828, 1161.6710071, 1598.0074804 ]
+    K = [900, 1900, 3800, 2000, 3700, 875]
 
     # compute the transfer function
     Tf = TransferFunc(w, *M, *K, *gamma)
@@ -91,7 +91,7 @@ if __name__ == '__main__':
 
     # --------------------------Plot results----------------------#
     #fig = plt.figure(figsize=(10, 7))
-    plt.title('Transfer function of coupled oscillators \n M$_1$=%d, M$_2$=%d, M$_3$=%d, M$_4$=%d, M$_7$=%d, M$_{pl}$=%d, K$_1$=%d,'
+    plt.title('Transfer function of SR model \n M$_1$=%d, M$_2$=%d, M$_3$=%d, M$_4$=%d, M$_7$=%d, M$_{pl}$=%d, K$_1$=%d,'
               'K$_2$=%d, K$_3$=%d, K$_4$=%d, K$_5$=%d, K$_6$=%d, $\gamma$=%.1f' % (M[0],M[1], M[2], M[3], M[4], M[5], K[0], K[1], K[2],
             K[3], K[4], K[5], gamma[0]),
               size=11)
@@ -103,11 +103,11 @@ if __name__ == '__main__':
     plt.minorticks_on()
 
     plt.plot(f, H[0], linestyle='-', linewidth=1, marker='', color='steelblue', label='output $x_1$')
-    plt.plot(f, H[1], linestyle='-', linewidth=1, marker='', color='violet', label='output $x_2$')
-    plt.plot(f, H[2], linestyle='-', linewidth=1, marker='', color='black', label='output $x_3$')
-    plt.plot(f, H[3], linestyle='-', linewidth=1, marker='', color='red', label='output $x_4$')
-    plt.plot(f, H[4], linestyle='-', linewidth=1, marker='', color='lime', label='output $x_7$')
-    plt.plot(f, H[5], linestyle='-', linewidth=1, marker='', color='pink', label='output $x_{pl}$')
+    #plt.plot(f, H[1], linestyle='-', linewidth=1, marker='', color='violet', label='output $x_2$')
+    #plt.plot(f, H[2], linestyle='-', linewidth=1, marker='', color='black', label='output $x_3$')
+    #plt.plot(f, H[3], linestyle='-', linewidth=1, marker='', color='red', label='output $x_4$')
+    #plt.plot(f, H[4], linestyle='-', linewidth=1, marker='', color='lime', label='output $x_7$')
+    #plt.plot(f, H[5], linestyle='-', linewidth=1, marker='', color='pink', label='output $x_{pl}$')
     plt.legend()
     plt.tight_layout()
 

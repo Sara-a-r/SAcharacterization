@@ -99,11 +99,11 @@ def evolution(evol_method, Nt_step, dt, physical_params, ref, kp, ki, kd, file_n
 if __name__ == '__main__':
 
     #Parameters of the simulation
-    Nt_step = 1e6     #temporal steps
+    Nt_step = 5e5     #temporal steps
     dt = 1e-3         #temporal step size
 
     #Parameters of the system
-    gamma = [5, 5, 5, 5, 5]  # viscous friction coeff [kg/m*s]
+    gamma = [4, 4, 4, 4, 4]  # viscous friction coeff [kg/m*s]
     M = [173, 165, 140, 118, 315, 125]  # filter mass [Kg]  [M1, M2, M3, M4, M7, Mpayload]
     K = [1623.75124242, 3706.96969851, 600.49266591,
          4223.06657828, 1161.6710071, 1598.0074804]  # spring constant [N/m]  [K1, K2, K3, K4, K5, K6]
@@ -118,6 +118,7 @@ if __name__ == '__main__':
     tt, v1_PID, v2_PID, v3_PID, v4_PID, v5_PID, v6_PID, x1_PID, x2_PID, x3_PID, x4_PID, x5_PID, x6_PID = evolution(*simulation_params,
                                                            physical_params, *control_params_PID,
                                                            file_name=None)
+
 
     # --------------------------Plot results----------------------#
     #fig = plt.figure(figsize=(12,10))
@@ -137,6 +138,8 @@ if __name__ == '__main__':
     plt.plot(tt, x6_PID, linestyle='-', linewidth=1, marker='', color='pink', label='x6, mass M$_{pl}$')
     plt.legend()
     plt.tight_layout()
+
+
 
     #save the plot in the results dir
     #out_name = os.path.join(results_dir, "SinResp_2M.png")
