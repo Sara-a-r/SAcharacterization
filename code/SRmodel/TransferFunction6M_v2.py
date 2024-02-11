@@ -41,19 +41,29 @@ def TransferFunc (w, M1, M2, M3, M4, M5, M6, K1, K2, K3, K4, K5, K6, g2, g3, g4,
                   [0, 0, K4 / M4, -(K4 + K5) / M4, K5 / M4, 0],
                   [0, 0, 0, K5 / M5, -(K5 + K6) / M5, K6 / M5],
                   [0, 0, 0, 0, K6/ M6, -K6 / M6]])
+
+    N = np.array([[1, 0, 0, 0, 0, 0],
+                  [-1, 1, 0, 0, 0, 0],
+                  [0, -1, 1, 0, 0, 0],
+                  [0, 0, -1, 1, 0, 0],
+                  [0, 0, 0, -1, 1, 0],
+                  [0, 0, 0, 0, 1, 0]])
+
     A = np.block([[V, X],
                   [Id, 0 * Id]])
 
     B = np.array((K1 / M1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0))
-    C = np.block([0*Id, Id])
+    C = np.block([0*Id, N])
+    D = np.array((-1, 0, 0, 0, 0, -1))
+
 
     #initialize the transfer matrix
     H = np.zeros((6, len(w)),dtype = 'complex_') #the matrix has 5 rows (like the number of output)
                                                        #and len(w) columns (all the range of frequencies).
                                                        #In each row there is the Tf of a single output
     for i in range(len(w)):
-        H_lenOUT = C @ np.linalg.inv((1j*w[i])*np.eye(12) - A) @ B #array, len=number of output, these elements are
-                                                                    #the values of the Tf of each output at a given freq
+        H_lenOUT = C @ np.linalg.inv((1j*w[i])*np.eye(12) - A) @ B + D #array, len=number of output, these elements are
+                                                                       #the values of the Tf of each output at a given freq
         #store each value of the Tf in the corresponding row of H
         H[0][i] = H_lenOUT[0]
         H[1][i] = H_lenOUT[1]
@@ -76,11 +86,12 @@ if __name__ == '__main__':
     f = np.linspace(1e-2,1e1,10000)
     w = 2*np.pi*f
     # define the parameters of the system
-    gamma = [5, 5, 5, 5, 5]              # viscous friction coeff [kg/m*s]
-    M = [160, 155, 135, 128, 400, 125]                  # filter mass [Kg]
-    #M = [173, 165, 140, 118, 315, 125]
-    #K = [ 939.26550966 , 386.9079704,  1256.44528694, 2419.21519328, 2115.22544381, 6888.85698531] # spring constant [N/m]
-    K = [900, 1900, 3800, 2000, 3700, 875]
+    gamma = [4, 4, 4, 4, 4]              # viscous friction coeff [kg/m*s]
+    #M = [160, 155, 135, 128, 400, 125]                  # filter mass [Kg]
+    M = [173, 165, 140, 118, 315, 125]
+    K = [3923.14475508, 4907.65263311, 1242.11744897, 316.50112348, 574.12017532,
+         4522.18941688]  # spring constant [N/m]
+    #K = [900, 1900, 3800, 2000, 3700, 875]
 
     # compute the transfer function
     Tf = TransferFunc(w, *M, *K, *gamma)
@@ -91,7 +102,7 @@ if __name__ == '__main__':
 
     #---------------------------Load data-------------------------#
     ff, Tf_m = np.loadtxt('../../data/SR_verticalTF_Ruggi.txt',unpack=True)
-    Tf_m = Tf_m * (1/402)  #rescaling factor
+    Tf_m = Tf_m * 0.0014  #rescaling factor
 
     # --------------------------Plot results----------------------#
     #fig = plt.figure(figsize=(10, 7))
@@ -115,6 +126,7 @@ if __name__ == '__main__':
 
     plt.plot(ff, Tf_m, linestyle='-', linewidth=1, marker='', color='red', label='open loop data')
     plt.legend()
+    plt.tight_layout()
 
     #save the plot in the results dir
     #out_name = os.path.join(results_dir, "Tf_2M2K.png")

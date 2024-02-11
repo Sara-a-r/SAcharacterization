@@ -23,10 +23,13 @@ def determinant_equation(K, M, w_values):
 
 if __name__ == '__main__':
     # define masses of the system
-    M = [173, 165, 140, 118, 315, 125]  # M1, M2, M3, M4, M7, Mpayload
+    #M = [173, 165, 140, 118, 315, 125]  # M1, M2, M3, M4, M7, Mpayload
+    M = [160, 155, 135, 128, 400, 125]
+
 
     # define normal frequencies of the system
-    f_normal = np.array([0.107, 0.360, 0.483, 0.701, 1.131, 1.368])
+    #f_normal = np.array([0.107, 0.360, 0.483, 0.701, 1.131, 1.368])
+    f_normal = np.array([0.106, 0.360, 0.482, 0.700, 1.138, 1.373])
     w_normal = 2 * np.pi * f_normal
 
     # define initial values for K
