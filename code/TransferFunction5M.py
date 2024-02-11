@@ -80,7 +80,7 @@ if __name__ == '__main__':
     # compute the transfer function
     Tf = TransferFunc(w, *M, *K, *gamma)
     # compute the magnitude of the transfer function
-    H = (np.real(Tf)**2+np.imag(Tf)**2)**1/2
+    H = (np.real(Tf)**2+np.imag(Tf)**2)**(1/2)
 
     A = Bode(Tf)
 

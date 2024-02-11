@@ -41,7 +41,7 @@ if __name__ == '__main__':
     K2 = 10
 
     Tf = TransferFunc(w,M1, M2, K1, K2, gamma)
-    M = (np.real(Tf)**2+np.imag(Tf)**2)**1/2
+    M = (np.real(Tf)**2+np.imag(Tf)**2)**(1/2)
     A = Bode(Tf)
 
     # --------------------------Plot results----------------------#
