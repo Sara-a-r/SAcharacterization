@@ -1,11 +1,12 @@
 import os
 import numpy as np
+import cmath
 import matplotlib.pyplot as plt
 
 #--------------------Setup the main directories------------------#
 #Define the various directories
 script_dir = os.getcwd()                         #define current dir
-main_dir = os.path.dirname(script_dir)           #go up of one directory
+main_dir = script_dir.split('code')[0]           # go up of two directory
 results_dir = os.path.join(main_dir, "figure")   #define results dir
 data_dir = os.path.join(main_dir, "data")        #define data dir
 
@@ -84,7 +85,7 @@ def evolution(evol_method, Nt_step, dt, physical_params, ref, kp, ki, kd, file_n
         P = kp * err                            # calculate P term
         I = I + ki * (err * dt)                 # calculate the I term
         D = kd * (delta_err / dt)               # calculate the D term
-        Fc = P + I + D                           # calculate PID term
+        Fc = P + I + D                          # calculate PID term
         j = j + 1
 
     #save simulation's data (if it's necessary)
@@ -95,6 +96,49 @@ def evolution(evol_method, Nt_step, dt, physical_params, ref, kp, ki, kd, file_n
     return (tt, np.array(v1), np.array(v2), np.array(v3), np.array(v4), np.array(v5), np.array(v6),
             np.array(x1), np.array(x2), np.array(x3), np.array(x4), np.array(x5), np.array(x6))
 
+#-----------------------Plant Transfer Function----------------------#
+def TransferFunc (w, M1, M2, M3, M4, M5, M6, K1, K2, K3, K4, K5, K6, g2, g3, g4, g5, g6):
+    #define the matrices of the system from the state-space equations
+    Id = np.eye(6)
+    V = np.array([[-(g2 / M1), g2 / M1, 0, 0, 0, 0],
+                  [g2 / M2, -(g2 + g3) / M2, g3 / M2, 0, 0, 0],
+                  [0, g3 / M3, -(g3 + g4) / M3, g4 / M3, 0, 0],
+                  [0, 0, g4 / M4, -(g4 + g5) / M4, g5 / M4, 0],
+                  [0, 0, 0, g5 / M5, -(g5 + g6) / M5, g6 / M5],
+                  [0, 0, 0, 0, g6 / M6, -g6 / M6]])
+    X = np.array([[-(K1 + K2) / M1, K2 / M1, 0, 0, 0, 0],
+                  [K2 / M2, -(K2 + K3) / M2, K3 / M2, 0, 0, 0],
+                  [0, K3 / M3, -(K3 + K4) / M3, K4 / M3, 0, 0],
+                  [0, 0, K4 / M4, -(K4 + K5) / M4, K5 / M4, 0],
+                  [0, 0, 0, K5 / M5, -(K5 + K6) / M5, K6 / M5],
+                  [0, 0, 0, 0, K6/ M6, -K6 / M6]])
+    A = np.block([[V, X],
+                  [Id, 0 * Id]])
+
+    B = np.array((K1 / M1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0))
+    C = np.block([0*Id, Id])
+
+    #initialize the transfer matrix
+    H = np.zeros((6, len(w)),dtype = 'complex_') #the matrix has 5 rows (like the number of output)
+                                                       #and len(w) columns (all the range of frequencies).
+                                                       #In each row there is the Tf of a single output
+    for i in range(len(w)):
+        H_lenOUT = C @ np.linalg.inv((1j*w[i])*np.eye(12) - A) @ B #array, len=number of output, these elements are
+                                                                    #the values of the Tf of each output at a given freq
+        #store each value of the Tf in the corresponding row of H
+        H[0][i] = H_lenOUT[0]
+        H[1][i] = H_lenOUT[1]
+        H[2][i] = H_lenOUT[2]
+        H[3][i] = H_lenOUT[3]
+        H[4][i] = H_lenOUT[4]
+        H[5][i] = H_lenOUT[5]
+    return H
+
+#---------------------Controller Transfer function---------------------#
+def Controller_Tf(w, kp, ki, kd):
+    s = 1j * w
+    return kp + (ki/s) + (kd * s)
+
 
 if __name__ == '__main__':
 
@@ -102,14 +146,21 @@ if __name__ == '__main__':
     Nt_step = 5e5     #temporal steps
     dt = 1e-3         #temporal step size
 
+    # create an array of frequencies
+    f = np.linspace(1e-2, 1e1, 10000)
+    w = 2 * np.pi * f
+
     #Parameters of the system
-    gamma = [4, 4, 4, 4, 4]  # viscous friction coeff [kg/m*s]
+    gamma = [5, 5, 5, 5, 5]  # viscous friction coeff [kg/m*s]
     M = [160, 155, 135, 128, 400, 125]  # filter mass [Kg]  [M1, M2, M3, M4, M7, Mpayload]
     K = [900, 1900, 3800, 2000, 3700, 875]  # spring constant [N/m]  [K1, K2, K3, K4, K5, K6]
 
     #Parameters of control
     ref = 0                                     # reference signal for x1
-    control_params_PID = [ref, 0, 0, 0]    # ref, kp, ki, kd
+    kp = 600.
+    ki = 1.
+    kd = 1000.
+    control_params_PID = [ref, kp, ki, kd]
 
     #Simulation
     physical_params = [*M, *K, *gamma, dt]
@@ -118,8 +169,51 @@ if __name__ == '__main__':
                                                            physical_params, *control_params_PID,
                                                            file_name=None)
 
+    #-----------------------Transfer function---------------------#
+    H = TransferFunc(w, *M, *K, *gamma)
+    C = Controller_Tf(w, kp, ki, kd)
+
+    Tf = ((np.real(H)) ** 2 + (np.imag(H)) ** 2) ** (1 / 2)     #plant Tf
+
+    G_ol = H * C
+    Tf_ol = ((np.real(G_ol)) ** 2 + (np.imag(G_ol)) ** 2) ** (1 / 2)
+
+    G_cl = G_ol / (1 + G_ol)
+    Tf_cl = ((np.real(G_cl)) ** 2 + (np.imag(G_cl)) ** 2) ** (1 / 2)
+
+    #evaluate poles and zeros
+    zeros_p = (- kp + cmath.sqrt(kp ** 2 - (4 * kd * ki))) / (2 * kd)
+    zeros_m = (- kp - cmath.sqrt(kp ** 2 - (4 * kd * ki))) / (2 * kd)
+    zeros_p_real = np.real(zeros_p)
+    zeros_p_img = np.imag(zeros_p)
+    zeros_m_real = np.real(zeros_m)
+    zeros_m_img = np.imag(zeros_m)
+
+    print('PID controller\'s poles and zeros are:')
+    if (ki != 0) : print('poles = 0')
+    print('real zeros are: %.4f, %.4f' % (zeros_p_real, zeros_m_real))
+    print('imag zeros are: %.4f, %.4f' % (zeros_p_img, zeros_m_img))
+
 
     # --------------------------Plot results----------------------#
+
+    #Transfer function
+    plt.title('Transfer function SR controlled')
+    plt.xlabel('Frequency [Hz]')
+    plt.ylabel('|x$_{out}$/x$_0$|')
+    plt.yscale('log')
+    plt.xscale('log')
+    plt.grid(True)
+    plt.minorticks_on()
+
+    #plt.plot(f, Tf[0], linestyle='-', linewidth=1, marker='', color='red', label='output $x_1$')
+    #plt.plot(f, Tf_ol[0], linestyle='-', linewidth=1, marker='', color='steelblue', label='output $x_1$')
+    plt.plot(f, Tf_cl[0], linestyle='-', linewidth=1, marker='', color='green', label='output $x_1$')
+    #plt.plot(f, np.sqrt((np.real(C))**2+(np.imag(C))**2), linestyle='-', linewidth=1, marker='', color='pink', label='output $x_1$')
+
+    plt.show()
+
+    #Time evolution
     #fig = plt.figure(figsize=(12,10))
     #plt.title('PID control for five coupled oscillators \n x$_1^{ref}$=%.1f, k$_p$=%.1f, k$_i$=%.1f, k$_d$=%.1f'
     #          %(control_params_PID[0], control_params_PID[1], control_params_PID[2], control_params_PID[3]), size=11)
@@ -130,14 +224,12 @@ if __name__ == '__main__':
     plt.minorticks_on()
 
     plt.plot(tt, x1_PID, linestyle='-', linewidth=1, marker='', color='steelblue', label='x1, mass M1')
-    plt.plot(tt, x2_PID, linestyle='-', linewidth=1, marker='', color='black', label='x2, mass M2')
-    plt.plot(tt, x3_PID, linestyle='-', linewidth=1, marker='', color='red', label='x3, mass M3')
-    plt.plot(tt, x4_PID, linestyle='-', linewidth=1, marker='', color='green', label='x4, mass M4')
-    plt.plot(tt, x5_PID, linestyle='-', linewidth=1, marker='', color='darkmagenta', label='x5, mass M7')
-    plt.plot(tt, x6_PID, linestyle='-', linewidth=1, marker='', color='pink', label='x6, mass M$_{pl}$')
+    #plt.plot(tt, x2_PID, linestyle='-', linewidth=1, marker='', color='black', label='x2, mass M2')
+    #plt.plot(tt, x3_PID, linestyle='-', linewidth=1, marker='', color='red', label='x3, mass M3')
+    #plt.plot(tt, x4_PID, linestyle='-', linewidth=1, marker='', color='green', label='x4, mass M4')
+    #plt.plot(tt, x5_PID, linestyle='-', linewidth=1, marker='', color='darkmagenta', label='x5, mass M7')
+    #plt.plot(tt, x6_PID, linestyle='-', linewidth=1, marker='', color='pink', label='x6, mass M$_{pl}$')
     plt.legend()
-    plt.tight_layout()
-
 
 
     #save the plot in the results dir

@@ -8,22 +8,8 @@ The code returns the transfer function for all the output (in this case X1/X0, X
 X4/X0, X5/X0).
 """
 
-import os
 import numpy as np
 import matplotlib.pyplot as plt
-
-#--------------------Setup the main directories------------------#
-#Define the various directories
-script_dir = os.getcwd()                         #define current dir
-main_dir = os.path.dirname(script_dir)           #go up of one directory
-results_dir = os.path.join(main_dir, "figure")   #define results dir
-data_dir = os.path.join(main_dir, "data")        #define data dir
-
-if not os.path.exists(results_dir):              #if the directory does not exist create it
-    os.mkdir(results_dir)
-
-if not os.path.exists(data_dir):                 #if the directory does not exist create it
-    os.mkdir(data_dir)
 
 #-----------------------Transfer Function----------------------#
 def TransferFunc (w, M1, M2, M3, M4, M5, M6, K1, K2, K3, K4, K5, K6, g2, g3, g4, g5, g6):
@@ -77,10 +63,12 @@ if __name__ == '__main__':
     w = 2*np.pi*f
     # define the parameters of the system
     gamma = [5, 5, 5, 5, 5]              # viscous friction coeff [kg/m*s]
-    M = [160, 155, 135, 128, 400, 125]                  # filter mass [Kg]
+    #M = [160, 155, 135, 128, 400, 125]                  # filter mass [Kg]
     #M = [173, 165, 140, 118, 315, 125]
-    #K = [ 939.26550966 , 386.9079704,  1256.44528694, 2419.21519328, 2115.22544381, 6888.85698531] # spring constant [N/m]
-    K = [900, 1900, 3800, 2000, 3700, 875]
+    M = [160, 125, 120, 110, 325, 82]
+    K = [2357.01888792,  643.60128908, 4134.5244433,   774.98240282, 3752.73099431, 590.95296587] # spring constant [N/m]
+    #K = [900, 1900, 3800, 2000, 3700, 875]
+    #K = [700, 1500, 3300, 1500, 3400, 564]
 
     # compute the transfer function
     Tf = TransferFunc(w, *M, *K, *gamma)

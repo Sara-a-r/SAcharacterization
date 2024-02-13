@@ -24,7 +24,8 @@ def determinant_equation(K, M, w_values):
 if __name__ == '__main__':
     # define masses of the system
     #M = [173, 165, 140, 118, 315, 125]  # M1, M2, M3, M4, M7, Mpayload
-    M = [160, 155, 135, 128, 400, 125]
+    #M = [160, 155, 135, 128, 400, 125]
+    M = [160, 125, 120, 110, 325, 82]
 
 
     # define normal frequencies of the system
@@ -42,7 +43,7 @@ if __name__ == '__main__':
     #result = minimize(lambda K: np.linalg.norm(determinant_equation(K, M, w_normal)),
     #                  initial_K, method='SLSQP')#,bounds=bounds, options={'maxiter':1000})
 
-    result = dual_annealing(lambda K: np.linalg.norm(determinant_equation(K, M, w_normal)), bounds, seed=1)
+    result = dual_annealing(lambda K: np.linalg.norm(determinant_equation(K, M, w_normal)), bounds, seed=0)
 
     solutions = result.x
 
@@ -50,6 +51,6 @@ if __name__ == '__main__':
     if not result.success:
         print(result.message)
 
-    print("Solutions for K1, K2, K3, K4, K5:")
+    print("Solutions for K1, K2, K3, K4, K5, K6:")
     print(solutions)
     print("The minimum value found is:", np.linalg.norm(determinant_equation(solutions, M, w_normal)))
