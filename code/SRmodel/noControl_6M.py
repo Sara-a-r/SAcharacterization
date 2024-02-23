@@ -164,6 +164,9 @@ if __name__ == '__main__':
     # compute the magnitude of the transfer function
     H = (np.real(Tf) ** 2 + np.imag(Tf) ** 2) ** (1 / 2)
 
+    #save H values in a file
+    np.savetxt(os.path.join(data_dir, 'TFnoControl.txt'), np.column_stack((f, H[0])), header='f[Hz], H')
+
     # extract imaginary and real part of poles
     real_parts = np.real(poles)
     imag_parts = np.imag(poles)

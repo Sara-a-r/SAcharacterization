@@ -54,7 +54,7 @@ def Kmatrix(A, B, C, D, dpoles):
     k = ct.place(A, B, desired_poles)
     return k
 
-def TransferFunc (w, A, B, C, D, k):
+def TransferFunc(w, A, B, C, D, k):
     #initialize the transfer matrix
     H = np.zeros((6, len(w)),dtype = 'complex_') #the matrix has 5 rows (like the number of output)
                                                        #and len(w) columns (all the range of frequencies).
@@ -62,6 +62,8 @@ def TransferFunc (w, A, B, C, D, k):
     for i in range(len(w)):
         H_lenOUT = C @ np.linalg.inv((1j*w[i])*np.eye(12) - (A-(B@k))) @ B #array, len=number of output, these elements are
                                                                     #the values of the Tf of each output at a given freq
+        H_lenOUT = H_lenOUT.squeeze() # remove empty dimension
+
         #store each value of the Tf in the corresponding row of H
         H[0][i] = H_lenOUT[0]
         H[1][i] = H_lenOUT[1]
@@ -154,18 +156,20 @@ if __name__ == '__main__':
 
     # Parameters of the system
     gamma = [5, 5, 5, 5, 5]                    # viscous friction coeff [kg/m*s]
-    M = [160, 125, 120, 110, 325, 82]                   # filter mass [Kg]  [M1, M2, M3, M4, M7, Mpayload]
-    K = [700, 1500, 3300, 1500, 3400, 564]      # spring constant [N/m]  [K1, K2, K3, K4, K5, K6]
+    M = [160, 125, 120, 110, 325, 82]          # filter mass [Kg]  [M1, M2, M3, M4, M7, Mpayload]
+    K = [700, 1500, 3300, 1500, 3400, 564]     # spring constant [N/m]  [K1, K2, K3, K4, K5, K6]
 
     # control parameters
     r = 0  # theta ref
     N = 112  # factor for scaling the input
 
     #define the desired poles
-    dpoles = [-0.7302313+8.44834539j, -0.7302313-8.44834539j, -0.4730504+7.11085663j,
-             -0.4730504-7.11085663j, -0.2692883+4.39542468j, -0.2692883-4.39542468j,
-             -0.029586+0.66927877j, -0.029586-0.66927877j, -0.79151 +2.24037402j,
-             -0.79151 -2.24037402j, -0.3315067+3.00566475j, -0.3315067-3.00566475j]
+    dpoles = [-0.7302313 + 8.44834539j, -0.7302313 - 8.44834539j,   #1.344Hz
+              -0.4730504 + 7.11085663j, -0.4730504 - 7.11085663j,   #1.131Hz
+              -0.7692883 + 4.39542468j, -0.7692883 - 4.39542468j,   #0.699Hz
+              -0.309586  + 0.66927877j, -0.309586  - 0.66927877j,   #0.106Hz
+              -0.79151   + 2.24037402j, -0.79151   - 2.24037402j,   #0.356Hz
+              -0.3315067 + 3.00566475j, -0.3315067 - 3.00566475j]   #0.478Hz
 
     # compute the state space matrices
     A, B, C, D = StateSpaceMatrix(*M, *K, *gamma)
@@ -208,11 +212,15 @@ if __name__ == '__main__':
     plt.show()
 
     # ----------------------------Plot TF----------------------------#
+    #load data TF not controlled
+    _, Tfnc = np.loadtxt('../../data/TFnoControl.txt',unpack=True)
+
     #fig = plt.figure(figsize=(10, 7))
-    plt.title('Transfer function of SR (FSF control)\n M$_1$=%d, M$_2$=%d, M$_3$=%d, M$_4$=%d, M$_7$=%d, M$_{pl}$=%d, K$_1$=%d,'
-              'K$_2$=%d, K$_3$=%d, K$_4$=%d, K$_5$=%d, K$_6$=%d, $\gamma$=%.1f' % (M[0],M[1], M[2], M[3], M[4], M[5], K[0], K[1], K[2],
-            K[3], K[4], K[5], gamma[0]),
-              size=11)
+    #plt.title('Transfer function of SR (FSF control)\n M$_1$=%d, M$_2$=%d, M$_3$=%d, M$_4$=%d, M$_7$=%d, M$_{pl}$=%d, K$_1$=%d,'
+    #          'K$_2$=%d, K$_3$=%d, K$_4$=%d, K$_5$=%d, K$_6$=%d, $\gamma$=%.1f' % (M[0],M[1], M[2], M[3], M[4], M[5], K[0], K[1], K[2],
+    #        K[3], K[4], K[5], gamma[0]),
+    #          size=11)
+    plt.title('Transfer function (FSF control)', size=11)
     plt.xlabel('f [Hz]')
     plt.ylabel('|x$_{out}$/x$_0$|')
     plt.yscale('log')
@@ -220,7 +228,8 @@ if __name__ == '__main__':
     plt.grid(True)
     plt.minorticks_on()
 
-    plt.plot(f, H[0], linestyle='-', linewidth=1, marker='', color='steelblue', label='output $x_1$')
+    plt.plot(f, Tfnc, linestyle='-', linewidth=1, marker='', color='red', label='no control')
+    plt.plot(f, H[0], linestyle='-', linewidth=1, marker='', color='steelblue', label='FSF control')
     plt.legend()
 
     plt.show()
