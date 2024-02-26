@@ -52,6 +52,7 @@ def Kmatrix(A, B, C, D, dpoles):
 
     # compute the gain
     k = ct.place(A, B, desired_poles)
+
     return k
 
 def TransferFunc(w, A, B, C, D, k):
@@ -79,7 +80,7 @@ def TransferFunc(w, A, B, C, D, k):
 
 #--------------------------Time evolution using ARMA model------------------------#
 def FSF_AR_model(y, A, B, K, N, r):
-    return (A - np.outer(B, K)) @ y + B * N * r  #nd array of y at instant n+1
+    return (A - np.outer(B,K)) @ y + B * N * r  #nd array of y at instant n+1
 
 def matrix(M1, M2, M3, M4, M5, M6, K1, K2, K3, K4, K5, K6, g2, g3, g4, g5, g6, dt):
     # defne the matrices A and B
@@ -99,7 +100,7 @@ def matrix(M1, M2, M3, M4, M5, M6, K1, K2, K3, K4, K5, K6, g2, g3, g4, g5, g6, d
     A = np.block([[V, X],
                   [dt*Id, Id]])
 
-    B = np.array((dt*K1/M1,0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0))
+    B = np.array((dt*K1 / M1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0))
     return A, B
 
 def evolution(evol_method, Nt_step, dt, physical_params, k, control_params, file_name = None):
@@ -164,17 +165,17 @@ if __name__ == '__main__':
     N = 112  # factor for scaling the input
 
     #define the desired poles
-    dpoles = [-0.7302313 + 8.44834539j, -0.7302313 - 8.44834539j,   #1.344Hz
-              -0.4730504 + 7.11085663j, -0.4730504 - 7.11085663j,   #1.131Hz
-              -0.7692883 + 4.39542468j, -0.7692883 - 4.39542468j,   #0.699Hz
-              -0.309586  + 0.66927877j, -0.309586  - 0.66927877j,   #0.106Hz
-              -0.79151   + 2.24037402j, -0.79151   - 2.24037402j,   #0.356Hz
-              -0.3315067 + 3.00566475j, -0.3315067 - 3.00566475j]   #0.478Hz
+    dpoles = [-2.9302313 + 8.44834539j, -2.9302313 - 8.44834539j,   #1.344Hz
+              -1.8730504 + 7.11085663j, -1.8730504 - 7.11085663j,   #1.131Hz
+              -3.9692883 + 4.39542468j, -3.9692883 - 4.39542468j,   #0.699Hz
+              -1.759586  + 0.66927877j, -1.759586  - 0.66927877j,   #0.106Hz
+              -2.99151   + 2.24037402j, -2.99151   - 2.24037402j,   #0.356Hz
+              -1.7315067 + 3.00566475j, -1.7315067 - 3.00566475j]   #0.478Hz
 
     # compute the state space matrices
     A, B, C, D = StateSpaceMatrix(*M, *K, *gamma)
     # compute the gain matrix k
-    k = Kmatrix(A, B, C, D, dpoles)
+    k = Kmatrix(A, B, C, D, dpoles)     #k is a (1,n) matrix (in this case (1, 12) matrix, i.e. row vector)
 
     # Simulation
     physical_params = [*M, *K, *gamma, dt]
