@@ -20,7 +20,6 @@ def psd_plots(frvect, ch, nperseg, iplot):
     #f, Pxx = signal.welch(data_filtered, fs=frvect[ch].attrs['sample_rate'], window='hann', nperseg=nperseg)
     #------------------------------------------------#
 
-    #f, Pxx = signal.welch(frvect[ch][2000:], fs=frvect[ch].attrs['sample_rate'], window='hann', nperseg=nperseg)
     f, Pxx = signal.welch(frvect[ch][2000:], fs=frvect[ch].attrs['sample_rate'], window='hann', nperseg=nperseg)
 
     # spectrum
@@ -116,6 +115,23 @@ if __name__ == '__main__':
         axLVDT.set_ylim(yl1)
 
         axLVDT.legend()
+
+        #--------------------other channels psd-----------------#
+
+        num = 0
+        for othch in othchans[1:]:
+            figOTH = plt.figure(othch)
+            axOTH = figOTH.subplots()
+            nperseg = 2 ** 14
+            f, Pxx = signal.welch(sa[othch][2000:], fs=sa[othch].attrs['sample_rate'], window='hann', nperseg=nperseg)
+            axOTH.loglog(f, np.sqrt(Pxx))
+            axOTH.grid(which='both', axis='both')
+            othchname = sa[othch].attrs['channel']
+            axOTH.set_ylabel(othchname[3:-5] + ' ' + '['+sa[ch].attrs['units']+']')
+            axOTH.set_xlabel('Frequency [Hz]')
+            num = num +1
+
+
 
         #-------------------------PCA analysis---------------------#                    #nota: qui alla funzione pca vengono passati i dati in
         print('Principal Component Analysis')                                           #funzione del tempo, invece nel codice test i dati dopo
