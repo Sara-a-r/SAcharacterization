@@ -151,6 +151,9 @@ if __name__ == '__main__':
     f = np.linspace(1e-2,1e1,10000)
     w = 2*np.pi*f
 
+    freq = np.loadtxt('../../data/freq.txt', unpack=True)   #this is necessary when we compute the product between
+    wn = 2*np.pi*freq                                              #ASD of seismometer and TF (TF must be evaluated in the same freq)
+
     # Parameters of the simulation
     Nt_step = 5e5     #temporal steps
     dt = 1e-3         #temporal step size
@@ -165,12 +168,12 @@ if __name__ == '__main__':
     N = 112  # factor for scaling the input
 
     #define the desired poles
-    dpoles = [-2.9302313 + 8.44834539j, -2.9302313 - 8.44834539j,   #1.344Hz
-              -1.8730504 + 7.11085663j, -1.8730504 - 7.11085663j,   #1.131Hz
-              -3.9692883 + 4.39542468j, -3.9692883 - 4.39542468j,   #0.699Hz
-              -1.759586  + 0.66927877j, -1.759586  - 0.66927877j,   #0.106Hz
-              -2.99151   + 2.24037402j, -2.99151   - 2.24037402j,   #0.356Hz
-              -1.7315067 + 3.00566475j, -1.7315067 - 3.00566475j]   #0.478Hz
+    dpoles = [-1.9302313 + 8.44834539j, -1.9302313 - 8.44834539j,   #1.344Hz
+              -0.8730504 + 7.11085663j, -0.8730504 - 7.11085663j,   #1.131Hz
+              -2.9692883 + 4.39542468j, -2.9692883 - 4.39542468j,   #0.699Hz
+              -0.759586  + 0.66927877j, -0.759586  - 0.66927877j,   #0.106Hz
+              -1.99151   + 2.24037402j, -1.99151   - 2.24037402j,   #0.356Hz
+              -0.7315067 + 3.00566475j, -0.7315067 - 3.00566475j]   #0.478Hz
 
     # compute the state space matrices
     A, B, C, D = StateSpaceMatrix(*M, *K, *gamma)
@@ -186,9 +189,13 @@ if __name__ == '__main__':
 
 
     # compute the transfer function
-    Tf, poles = TransferFunc(w, A, B, C, D, k)
+    Tf, poles = TransferFunc(wn, A, B, C, D, k)
     # compute the magnitude of the transfer function
     H = (np.real(Tf) ** 2 + np.imag(Tf) ** 2) ** (1 / 2)
+
+
+    #save H values in a file
+    np.savetxt(os.path.join(data_dir, 'TF_FSFcontrol.txt'), np.column_stack((freq, H[0], H[5])), header='f[Hz], H(x1/x0), H(xpl/x0)')
 
     # extract imaginary and real part of poles
     real_parts = np.real(poles)
@@ -214,13 +221,8 @@ if __name__ == '__main__':
 
     # ----------------------------Plot TF----------------------------#
     #load data TF not controlled
-    _, Tfnc = np.loadtxt('../../data/TFnoControl.txt',unpack=True)
+    _, Tfnc_1, Tfnc_pl = np.loadtxt('../../data/TFnoControl.txt',unpack=True)
 
-    #fig = plt.figure(figsize=(10, 7))
-    #plt.title('Transfer function of SR (FSF control)\n M$_1$=%d, M$_2$=%d, M$_3$=%d, M$_4$=%d, M$_7$=%d, M$_{pl}$=%d, K$_1$=%d,'
-    #          'K$_2$=%d, K$_3$=%d, K$_4$=%d, K$_5$=%d, K$_6$=%d, $\gamma$=%.1f' % (M[0],M[1], M[2], M[3], M[4], M[5], K[0], K[1], K[2],
-    #        K[3], K[4], K[5], gamma[0]),
-    #          size=11)
     plt.title('Transfer function (FSF control)', size=11)
     plt.xlabel('f [Hz]')
     plt.ylabel('|x$_{out}$/x$_0$|')
@@ -229,8 +231,9 @@ if __name__ == '__main__':
     plt.grid(True)
     plt.minorticks_on()
 
-    plt.plot(f, Tfnc, linestyle='-', linewidth=1, marker='', color='red', label='no control')
-    plt.plot(f, H[0], linestyle='-', linewidth=1, marker='', color='steelblue', label='FSF control')
+    plt.plot(freq, Tfnc_pl, linestyle='-', linewidth=1, marker='', color='red', label='no control')
+    #plt.plot(freq, H[0], linestyle='-', linewidth=1, marker='', color='steelblue', label='FSF control')
+    plt.plot(freq, H[5], linestyle='-', linewidth=1, marker='', color='steelblue', label='x$_{out}$ = x$_{pl}$')
     plt.legend()
 
     plt.show()

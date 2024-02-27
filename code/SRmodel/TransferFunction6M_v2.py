@@ -1,5 +1,5 @@
 """
-This code implements the transfer function of a system composed of 5 masses and 5 springs.
+This code implements the transfer function of a system composed of 6 masses and 6 springs.
 On the system acts a viscous friction force with a coefficient gamma.
 The spring in contact with the wall is forced by a sinusoidal force F=F0*sin(wt)=K1*(x0).
 The system is described in time domain by the equation dx/dt = A*x + B*u, y = C*x + D*u and

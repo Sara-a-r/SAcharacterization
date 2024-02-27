@@ -1,7 +1,6 @@
 import os
 from scipy import signal
 from scipy.linalg import eig
-import control as ct
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -137,6 +136,10 @@ if __name__ == '__main__':
     f = np.linspace(1e-2,1e1,10000)
     w = 2*np.pi*f
 
+    freq = np.loadtxt('../../data/freq.txt', unpack=True)   #this is necessary when we compute the product between
+    wn = 2*np.pi*freq                                              #ASD of seismometer and TF (TF must be evaluated in the same freq)
+
+
     # Parameters of the simulation
     Nt_step = 5e5     #temporal steps
     dt = 1e-3         #temporal step size
@@ -146,26 +149,26 @@ if __name__ == '__main__':
     M = [160, 125, 120, 110, 325, 82]                   # filter mass [Kg]  [M1, M2, M3, M4, M7, Mpayload]
     K = [700, 1500, 3300, 1500, 3400, 564]      # spring constant [N/m]  [K1, K2, K3, K4, K5, K6]
     F0 = 0                                               # amplitude of the external force #Note : consider also the coeff in B
-    wn = 0                                               # f of the ext force
+    ws = 0                                               # f of the ext force
 
     # Signal applied to the system
     F = sin_function
 
     # Simulation
     physical_params = [*M, *K, *gamma, dt]
-    signal_params = [F0, wn]
+    signal_params = [F0, ws]
     simulation_params = [AR_model, Nt_step, dt]
     tt, v1, v2, v3, v4, v5, v6, x1, x2, x3, x4, x5, x6 = evolution(*simulation_params,
                                         physical_params, signal_params, F, file_name = None)
 
 
     # compute the transfer function
-    Tf, poles = TransferFunc(w, *M, *K, *gamma)
+    Tf, poles = TransferFunc(wn, *M, *K, *gamma)
     # compute the magnitude of the transfer function
     H = (np.real(Tf) ** 2 + np.imag(Tf) ** 2) ** (1 / 2)
 
     #save H values in a file
-    np.savetxt(os.path.join(data_dir, 'TFnoControl.txt'), np.column_stack((f, H[0])), header='f[Hz], H')
+    #np.savetxt(os.path.join(data_dir, 'TFnoControl.txt'), np.column_stack((freq, H[0], H[5])), header='f[Hz], H(x1/x0), H(xpl/x0)')
 
     # extract imaginary and real part of poles
     real_parts = np.real(poles)
@@ -202,7 +205,7 @@ if __name__ == '__main__':
     plt.grid(True)
     plt.minorticks_on()
 
-    plt.plot(f, H[0], linestyle='-', linewidth=1, marker='', color='steelblue', label='output $x_1$')
+    plt.plot(freq, H[0], linestyle='-', linewidth=1, marker='', color='steelblue', label='output $x_1$')
     plt.legend()
 
     plt.show()
