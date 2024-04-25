@@ -74,7 +74,7 @@ def evolution(evol_method, Nt_step, dt, physical_params, ref, kp, ki, kd, file_n
         x1.append(y_t[2])
         x2.append(y_t[3])
 
-        err = ref - y_t[2]                      # evaluate the error
+        err = ref - y_t[2]                     # evaluate the error
         err_t.append(err)
         delta_err = err - err_t[j - 1]
         P = kp * err                            # calculate P term

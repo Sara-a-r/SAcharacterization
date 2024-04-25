@@ -133,15 +133,17 @@ def evolution(evol_method, Nt_step, dt, physical_params, signal_params, F, file_
 
 if __name__ == '__main__':
     # create an array of frequencies
-    f = np.linspace(1e-2,1e1,10000)
-    w = 2*np.pi*f
+    #f = np.arange(1e-2,1e1,0.003)
+    #w = 2*np.pi*f
 
     freq = np.loadtxt('../../data/freq.txt', unpack=True)   #this is necessary when we compute the product between
     wn = 2*np.pi*freq                                              #ASD of seismometer and TF (TF must be evaluated in the same freq)
 
+    #print(freq[7]-freq[6])   #0.0030517578125 Hz
+    #print(freq[0], freq[-1], len(freq)) #0.0, 25.0, 8193
 
     # Parameters of the simulation
-    Nt_step = 5e5     #temporal steps
+    Nt_step = 2e5     #temporal steps
     dt = 1e-3         #temporal step size
 
     # Parameters of the system
@@ -168,7 +170,7 @@ if __name__ == '__main__':
     H = (np.real(Tf) ** 2 + np.imag(Tf) ** 2) ** (1 / 2)
 
     #save H values in a file
-    #np.savetxt(os.path.join(data_dir, 'TFnoControl.txt'), np.column_stack((freq, H[0], H[5])), header='f[Hz], H(x1/x0), H(xpl/x0)')
+    np.savetxt(os.path.join(data_dir, 'TFnoControl.txt'), np.column_stack((freq, H[0], H[5])), header='f[Hz], H(x1/x0), H(xpl/x0)')
 
     # extract imaginary and real part of poles
     real_parts = np.real(poles)
@@ -180,49 +182,51 @@ if __name__ == '__main__':
     print('Normal frequencies are:', (imag_parts[imag_parts>0] / (2 * np.pi)))
 
     #-----------------------------plot poles-------------------------#
-    #plt.figure(figsize=(5, 4))
-    plt.title('Poles of the system', size=11)
-    plt.xlabel('$\sigma$ (real part)')
-    plt.ylabel('$j \omega$ (imaginary part)')
-    plt.grid(True)
-    plt.minorticks_on()
+    plt.figure(figsize=(6,5))
+    plt.title('Poles in $s$-plane', size=13)
+    plt.xlabel('$\sigma$ (real part)', size=12)
+    plt.ylabel('$j \omega$ (imaginary part)', size=12)
+    plt.grid(True, which='both',ls='-', alpha=0.3, lw=0.5)
+    #plt.minorticks_on()
 
-    plt.axhline(y=0, linestyle='-', color='black', linewidth=1.1)
-    plt.axvline(x=0, linestyle='-', color='black', linewidth=1.1)
-    plt.scatter(real_parts, imag_parts, marker='x', color='blue', linewidths=0.9)
+    plt.axhline(y=0, linestyle=':', color='black', linewidth=1.1)
+    plt.axvline(x=0, linestyle=':', color='black', linewidth=1.1)
+    plt.scatter(real_parts, imag_parts, marker='x', color='steelblue', linewidths=1)
     plt.show()
 
     # ----------------------------Plot TF----------------------------#
-    #fig = plt.figure(figsize=(10, 7))
-    plt.title('Transfer function of SR\n M$_1$=%d, M$_2$=%d, M$_3$=%d, M$_4$=%d, M$_7$=%d, M$_{pl}$=%d, K$_1$=%d,'
-              'K$_2$=%d, K$_3$=%d, K$_4$=%d, K$_5$=%d, K$_6$=%d, $\gamma$=%.1f' % (M[0],M[1], M[2], M[3], M[4], M[5], K[0], K[1], K[2],
-            K[3], K[4], K[5], gamma[0]),
-              size=11)
-    plt.xlabel('f [Hz]')
-    plt.ylabel('|x$_{out}$/x$_0$|')
+    fig = plt.figure(figsize=(9, 5))
+    plt.title('Transfer function without control', size=13)
+    plt.xlabel('Frequency [Hz]', size=12)
+    plt.ylabel('|x$_{out}$/x$_0$|', size=12)
     plt.yscale('log')
     plt.xscale('log')
-    plt.grid(True)
+    plt.grid(True, which='both', ls='-', alpha=0.3, lw=0.5)
     plt.minorticks_on()
 
-    plt.plot(freq, H[0], linestyle='-', linewidth=1, marker='', color='steelblue', label='output $x_1$')
+    #plt.plot(freq, H[0], linestyle='-', linewidth=1, marker='', color='steelblue', label='output $x_1$')
+    plt.plot(freq, H[5], linestyle='-', linewidth=1, marker='', color='steelblue', label='output $x_{pl}$')
     plt.legend()
 
     plt.show()
 
     # -----------------------Plot time evolution-------------------#
-    # fig = plt.figure(figsize=(12,10))
-    plt.title('Time evolution for SR (AR model)')
-    plt.xlabel('Time [s]')
-    plt.ylabel('x [m]')
-    plt.grid(True)
+    # save time evol in a file
+    np.savetxt(os.path.join(data_dir, 'timeEvol_noControl.txt'), np.column_stack((tt, x1, x6)),
+               header='time[s], x1, x6')
+
+    fig = plt.figure(figsize=(5, 5))
+    plt.title('Time evolution', size=13)
+    plt.xlabel('Time [s]', size=12)
+    plt.ylabel('x [m]', size=12)
+    plt.grid(True, ls='-', alpha=0.3, lw=0.5)  # , which='both',ls='-', alpha=0.3, lw=0.5)
     plt.minorticks_on()
 
-    plt.plot(tt, x1, linestyle='-', linewidth=1, marker='', color='steelblue', label='x1, M$_1$')
-    plt.plot(tt, x2, linestyle='-', linewidth=1, marker='', color='black', label='x2, M$_2$')
-    plt.plot(tt, x3, linestyle='-', linewidth=1, marker='', color='red', label='x3, M$_3$')
-    plt.plot(tt, x4, linestyle='-', linewidth=1, marker='', color='green', label='x4, M$_4$')
-    plt.plot(tt, x5, linestyle='-', linewidth=1, marker='', color='darkmagenta', label='x7, M$_7$')
+    #plt.plot(tt, x1, linestyle='-', linewidth=1, marker='', color='steelblue', label='x1, M$_1$')
+    #plt.plot(tt, x2, linestyle='-', linewidth=1, marker='', color='black', label='x2, M$_2$')
+    #plt.plot(tt, x3, linestyle='-', linewidth=1, marker='', color='red', label='x3, M$_3$')
+    #plt.plot(tt, x4, linestyle='-', linewidth=1, marker='', color='green', label='x4, M$_4$')
+    #plt.plot(tt, x5, linestyle='-', linewidth=1, marker='', color='darkmagenta', label='x7, M$_7$')
     plt.plot(tt, x6, linestyle='-', linewidth=1, marker='', color='pink', label='x$_{pl}$, M$_{pl}$')
     plt.legend()
 

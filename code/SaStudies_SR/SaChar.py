@@ -23,27 +23,29 @@ def psd_plots(frvect, ch, nperseg, iplot):
     f, Pxx = signal.welch(frvect[ch][2000:], fs=frvect[ch].attrs['sample_rate'], window='hann', nperseg=nperseg)
 
     # spectrum
-    ax = plt.subplot(3,3,iplot+1)
+    ax = plt.subplot(3,2,iplot+1)
     # cumulated RMS
     df = np.diff(f)
     varxx = np.cumsum(np.flip(df * Pxx[0:-1]))
-    ax.loglog(f, np.sqrt(Pxx))
+    ax.loglog(f, np.sqrt(Pxx), linestyle='-', linewidth=1, label='ASD')
 
     #-------------------------------------------------#
     # save data (psd LVDT)
     #dataLVDT = np.column_stack((f,np.sqrt(Pxx)))
     #np.savetxt('LVDT' + '{}'.format(iplot), dataLVDT)
     #-------------------------------------------------#
-    ax.loglog(f[0:-1], np.flip(np.sqrt(varxx)))
-    ax.grid()
+    ax.loglog(f[0:-1], np.flip(np.sqrt(varxx)), linestyle='-', linewidth=1, label='rms')
+    ax.grid(True, which='both',ls='-', alpha=0.3, lw=0.5)
     chname = frvect[ch].attrs['channel']
-    ax.set_ylabel(chname[9:18] + ' ' + frvect[ch].attrs['units'])
+    ax.set_title(chname[3:23] + ' ', size=12) #'['+frvect[ch].attrs['units']+']', size=12)
+    ax.set_ylabel('ASD [$\mu m/\sqrt{Hz}$]', size=10)
     yl = ax.get_ylim()
     yl1 = [5.e-4, yl[1]]
     ax.set_ylim(yl1)
 
-    ax.set_xlabel('Frequency [Hz]')
-    axLVDT.loglog(f, np.sqrt(Pxx) * 100.**(-iplot), label=chname)
+    ax.set_xlabel('Frequency [Hz]', size=10)
+    axLVDT.loglog(f, np.sqrt(Pxx) * 100.**(-iplot),  linestyle='-', linewidth=1, label=chname)
+    ax.legend()
 
 #--------------------------Covariance matrix-------------------------#
 
@@ -94,7 +96,7 @@ if __name__ == '__main__':
 
         figLVDT = plt.figure('LVDT')        #plot all LVDT data
         axLVDT = figLVDT.subplots()
-        plt.figure('LVDT separated')        #plot LVD separated
+        plt.figure('LVDT separated', figsize=(10,10))        #plot LVD separated
 
         iplot = 0           #index that runs on channels of LVDT
         for ch in channels:
@@ -104,12 +106,13 @@ if __name__ == '__main__':
             iplot += 1
 
 
-        psd_plots(sa, 'V1:ENV_CEB_SEIS_V_50Hz', nperseg, iplot)      #add the psd for env_seis channel
+        #psd_plots(sa, 'V1:ENV_CEB_SEIS_V_50Hz', nperseg, iplot)      #add the psd for env_seis channel
         iplot += 1
 
-        axLVDT.grid(which='both', axis='both')
+        axLVDT.grid(True, which='both',ls='-', alpha=0.3, lw=0.5)
         axLVDT.set_xlim([1.e-2, 5.e0])
-        axLVDT.set_xlabel('Frequency [Hz]')
+        axLVDT.set_xlabel('Frequency [Hz]', size=12)
+        axLVDT.set_ylabel('ASD', size=12)
         yl = axLVDT.get_ylim()
         yl1 = [5.e-14, yl[1]]
         axLVDT.set_ylim(yl1)
@@ -125,10 +128,10 @@ if __name__ == '__main__':
             nperseg = 2 ** 14
             f, Pxx = signal.welch(sa[othch][2000:], fs=sa[othch].attrs['sample_rate'], window='hann', nperseg=nperseg)
             axOTH.loglog(f, np.sqrt(Pxx))
-            axOTH.grid(which='both', axis='both')
+            axOTH.grid(True, which='both',ls='-', alpha=0.3, lw=0.5)
             othchname = sa[othch].attrs['channel']
-            axOTH.set_ylabel(othchname[3:-5] + ' ' + '['+sa[ch].attrs['units']+']')
-            axOTH.set_xlabel('Frequency [Hz]')
+            axOTH.set_ylabel(othchname[3:-5] + ' ' + '['+sa[ch].attrs['units']+']', size=12)
+            axOTH.set_xlabel('Frequency [Hz]', size=12)
             num = num +1
 
 
@@ -183,7 +186,7 @@ if __name__ == '__main__':
             #--------------------------------------------#
 
             ax.loglog(f[0:-1], np.flip(np.sqrt(varxx)))
-            ax.grid()
+            ax.grid(True, which='both',ls='-', alpha=0.3, lw=0.5)
             chname = 'U' + '{}'.format(iU)
             ax.set_ylabel(chname + ' ' + units)
             ax.set_ylim([5.e-5, 5.e0])
@@ -191,7 +194,7 @@ if __name__ == '__main__':
 
             axPCA.loglog(f, np.sqrt(Pxx) * 100.**(-iU), label='U' + '{}'.format(iU))    #figure PCA
 
-        axPCA.grid(which='both', axis='both')
+        axPCA.grid(True, which='both',ls='-', alpha=0.3, lw=0.5)
         # ax.set_ylim([5.e-4, 5.e2])
         axPCA.set_xlim([1.e-2, 5.e0])
         yl = axPCA.get_ylim()
@@ -222,12 +225,12 @@ if __name__ == '__main__':
             yl = axTF[0].get_ylim()
             yl1 = [1.e-3, yl[1]]
             axTF[0].set_ylim(yl1)
-            axTF[0].grid(which='both', axis='both')
+            axTF[0].grid(True, which='both',ls='-', alpha=0.3, lw=0.5)
             axTF[0].set_xlim([0.5e-1, 3.e0])
-            axTF[1].grid(which='both', axis='both')
+            axTF[1].grid(True, which='both',ls='-', alpha=0.3, lw=0.5)
             axTF[1].set_xlim([0.5e-1, 3.e0])
             axTF[1].set_ylim([-4, 4])
-            axTF[2].grid(which='both', axis='both')
+            axTF[2].grid(True, which='both',ls='-', alpha=0.3, lw=0.5)
             axTF[2].set_xlim([0.5e-1, 3.e0])
             axTF[2].set_ylim([0., 1.])
             axTF[2].set_xlabel('Frequency [Hz]')

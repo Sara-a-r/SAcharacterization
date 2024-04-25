@@ -16,45 +16,39 @@ if not os.path.exists(data_dir):                 #if the directory does not exis
     os.mkdir(data_dir)
 
 #-----------------------Transfer Function----------------------#
-def TransferFunc (w, M1, M2, K1, K2, gamma):
-    num = - w**2*M2*K1 + 1j*w*gamma*K1 + K1*K2
-    den = w**4*M2*M1 - 1j*w**3*gamma*(M1+M2) - w**2*(M2*(K1+K2)+M1*K2) + 1j*w*gamma*K1 + K1*K2
+def TransferFunc (w, M, K, gamma):
+    num = np.sqrt(1+gamma**2)
+    den = np.sqrt((1-(w**2/(K/M)))**2+gamma**2)
     return num / den
 
-#----------------------------Phase-----------------------------#
-def Phase(Tf):
-    return np.arctan(np.imag(Tf)/np.real(Tf)) * 180 /np.pi
-
-#-------------------------Bode plot-----------------------------#
-def Bode(Tf):
-    return 20 * np.log10(np.abs(Tf))
 
 if __name__ == '__main__':
     #create an array of frequencies
     f = np.linspace(0,1e1,100000)
     w = 2*np.pi*f
     #define the parameters of the system
-    gamma = 5       # viscous friction coeff [kg/m*s]
-    M1 = 173         # filter mass [Kg]
-    M2 = 165
-    K1 = 985          # spring constant [N/m]
-    K2 = 689
+    gamma = 0       # viscous friction coeff [kg/m*s]
+    M = 10
+    K = 10
 
-    Tf = TransferFunc(w,M1, M2, K1, K2, gamma)
-    M = (np.real(Tf)**2+np.imag(Tf)**2)**(1/2)
-    A = Bode(Tf)
+    Tf = TransferFunc(w, 0.1, 0.12, 0.01)
+    Tf2 = TransferFunc(w, 0.1, 2.0, 0.01)*TransferFunc(w, 0.1, 0.1, 0.01)
 
     # --------------------------Plot results----------------------#
 
-    plt.title('Transfer function for coupled oscillators \n M$_1$=%d, M$_2$=%d, K$_1$=%d, K$_2$=%d, $\gamma$=%.1f' % (M1,M2,K1,K2,gamma))
-    plt.xlabel('f [Hz]')
-    plt.ylabel('|x$_1$/x$_0$|')
+    plt.title('Transfer function of single and double pendulum', size=13)
+    plt.xlabel('Frequency [Hz]', size=12)
+    plt.ylabel('TF', size=12)
     plt.yscale('log')
     plt.xscale('log')
-    plt.grid(True)
+    plt.xlim(0.05,10)
+    plt.ylim(10**-6,500)
+    plt.grid(True, which='both',ls='-', alpha=0.2, lw=0.5)
     plt.minorticks_on()
 
-    plt.plot(f, M, linestyle='-', linewidth=1, marker='', color='steelblue')
+    plt.plot(f, Tf, linestyle='-', linewidth=1, marker='', color='steelblue',label='Single pendulum')
+    plt.plot(f, Tf2, linestyle='-', linewidth=1, marker='', color= 'coral',label='Double pendulum')
+    plt.legend()
     plt.tight_layout()
 
     #save the plot in the results dir

@@ -35,7 +35,7 @@ def FFT(fs, signal):
 if __name__ == '__main__':
 
     #upload data
-    tt, v1, v2, v3, v4, v5, x1, x2, x3, x4, x5 = np.loadtxt(os.path.join(data_dir, "5M5KGsimulation4.txt"), unpack=True)
+    tt, v1, v2, v3, v4, v5, x1, x2, x3, x4, x5 = np.loadtxt(os.path.join(data_dir, "5M5KGsimulation.txt"), unpack=True)
 
     #-----------------------------Compute FFT----------------------------#
     #compute the FFT

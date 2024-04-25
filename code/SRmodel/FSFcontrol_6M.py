@@ -51,17 +51,17 @@ def Kmatrix(A, B, C, D, dpoles):
     desired_poles = np.array(dpoles)
 
     # compute the gain
-    k = ct.place(A, B, desired_poles)
+    k = ct.acker(A, B, desired_poles)  #ct.place
 
     return k
 
-def TransferFunc(w, A, B, C, D, k):
+def TransferFunc(w, A, B, C, D, k, N):
     #initialize the transfer matrix
     H = np.zeros((6, len(w)),dtype = 'complex_') #the matrix has 5 rows (like the number of output)
                                                        #and len(w) columns (all the range of frequencies).
                                                        #In each row there is the Tf of a single output
     for i in range(len(w)):
-        H_lenOUT = C @ np.linalg.inv((1j*w[i])*np.eye(12) - (A-(B@k))) @ B #array, len=number of output, these elements are
+        H_lenOUT = C @ np.linalg.inv((1j*w[i])*np.eye(12) - (A-(B@k))) @ B * N #array, len=number of output, these elements are
                                                                     #the values of the Tf of each output at a given freq
         H_lenOUT = H_lenOUT.squeeze() # remove empty dimension
 
@@ -145,17 +145,16 @@ def evolution(evol_method, Nt_step, dt, physical_params, k, control_params, file
 
 
 
-
 if __name__ == '__main__':
     # create an array of frequencies
-    f = np.linspace(1e-2,1e1,10000)
-    w = 2*np.pi*f
+    #f = np.linspace(1e-2,1e1,10000)
+    #w = 2*np.pi*f
 
     freq = np.loadtxt('../../data/freq.txt', unpack=True)   #this is necessary when we compute the product between
     wn = 2*np.pi*freq                                              #ASD of seismometer and TF (TF must be evaluated in the same freq)
 
     # Parameters of the simulation
-    Nt_step = 5e5     #temporal steps
+    Nt_step = 2e5     #temporal steps
     dt = 1e-3         #temporal step size
 
     # Parameters of the system
@@ -163,22 +162,22 @@ if __name__ == '__main__':
     M = [160, 125, 120, 110, 325, 82]          # filter mass [Kg]  [M1, M2, M3, M4, M7, Mpayload]
     K = [700, 1500, 3300, 1500, 3400, 564]     # spring constant [N/m]  [K1, K2, K3, K4, K5, K6]
 
-    # control parameters
-    r = 0  # theta ref
-    N = 112  # factor for scaling the input
-
     #define the desired poles
-    dpoles = [-1.9302313 + 8.44834539j, -1.9302313 - 8.44834539j,   #1.344Hz
-              -0.8730504 + 7.11085663j, -0.8730504 - 7.11085663j,   #1.131Hz
-              -2.9692883 + 4.39542468j, -2.9692883 - 4.39542468j,   #0.699Hz
-              -0.759586  + 0.66927877j, -0.759586  - 0.66927877j,   #0.106Hz
-              -1.99151   + 2.24037402j, -1.99151   - 2.24037402j,   #0.356Hz
-              -0.7315067 + 3.00566475j, -0.7315067 - 3.00566475j]   #0.478Hz
+    dpoles = [-1.0302313 + 8.44834539j, -1.0302313 - 8.44834539j,   #1.344Hz
+              -0.1730504 + 7.11085663j, -0.1730504 - 7.11085663j,   #1.131Hz
+              -2.0692883 + 4.39542468j, -2.0692883 - 4.39542468j,   #0.699Hz
+              -0.159586  + 0.66927877j, -0.159586  - 0.66927877j,   #0.106Hz
+              -1.09151   + 2.24037402j, -1.09151   - 2.24037402j,   #0.356Hz
+              -0.1315067 + 3.00566475j, -0.1315067 - 3.00566475j]   #0.478Hz
 
     # compute the state space matrices
     A, B, C, D = StateSpaceMatrix(*M, *K, *gamma)
     # compute the gain matrix k
     k = Kmatrix(A, B, C, D, dpoles)     #k is a (1,n) matrix (in this case (1, 12) matrix, i.e. row vector)
+
+    # control parameters
+    r = 0  # ref
+    N = -1/ (C @ np.linalg.inv(A-(B@k)) @ B)[0] # factor for scaling the input
 
     # Simulation
     physical_params = [*M, *K, *gamma, dt]
@@ -187,12 +186,10 @@ if __name__ == '__main__':
     tt, v1, v2, v3, v4, v5, v6, x1, x2, x3, x4, x5, x6 = evolution(*simulation_params,
                                         physical_params, k, control_params, file_name = None)
 
-
     # compute the transfer function
-    Tf, poles = TransferFunc(wn, A, B, C, D, k)
+    Tf, poles = TransferFunc(wn, A, B, C, D, k, N)
     # compute the magnitude of the transfer function
     H = (np.real(Tf) ** 2 + np.imag(Tf) ** 2) ** (1 / 2)
-
 
     #save H values in a file
     np.savetxt(os.path.join(data_dir, 'TF_FSFcontrol.txt'), np.column_stack((freq, H[0], H[5])), header='f[Hz], H(x1/x0), H(xpl/x0)')
@@ -207,43 +204,47 @@ if __name__ == '__main__':
     print('Normal frequencies are:', (imag_parts[imag_parts>0] / (2 * np.pi)))
 
     #-----------------------------plot poles-------------------------#
-    #plt.figure(figsize=(5, 4))
-    plt.title('Poles of the system', size=11)
-    plt.xlabel('$\sigma$ (real part)')
-    plt.ylabel('$j \omega$ (imaginary part)')
-    plt.grid(True)
-    plt.minorticks_on()
+    plt.figure(figsize=(6,5))
+    plt.title('Poles in $s$-plane', size=13)
+    plt.xlabel('$\sigma$ (real part)', size=12)
+    plt.ylabel('$j \omega$ (imaginary part)', size=12)
+    plt.grid(True, which='both',ls='-', alpha=0.3, lw=0.5)
+    #plt.minorticks_on()
 
-    plt.axhline(y=0, linestyle='-', color='black', linewidth=1.1)
-    plt.axvline(x=0, linestyle='-', color='black', linewidth=1.1)
-    plt.scatter(real_parts, imag_parts, marker='x', color='blue', linewidths=0.9)
+    plt.axhline(y=0, linestyle=':', color='black', linewidth=1.1)
+    plt.axvline(x=0, linestyle=':', color='black', linewidth=1.1)
+    plt.scatter(real_parts, imag_parts, marker='x', color='steelblue', linewidths=1)
     plt.show()
 
     # ----------------------------Plot TF----------------------------#
     #load data TF not controlled
     _, Tfnc_1, Tfnc_pl = np.loadtxt('../../data/TFnoControl.txt',unpack=True)
 
-    plt.title('Transfer function (FSF control)', size=11)
-    plt.xlabel('f [Hz]')
-    plt.ylabel('|x$_{out}$/x$_0$|')
+    fig = plt.figure(figsize=(9, 5))
+    plt.title('Transfer function (FSF control)', size=13)
+    plt.xlabel('Frequency [Hz]', size=12)
+    plt.ylabel('|x$_{out}$/x$_0$|', size=12)
     plt.yscale('log')
     plt.xscale('log')
-    plt.grid(True)
+    plt.grid(True, which='both',ls='-', alpha=0.3, lw=0.5)
     plt.minorticks_on()
 
-    plt.plot(freq, Tfnc_pl, linestyle='-', linewidth=1, marker='', color='red', label='no control')
+    plt.plot(freq, Tfnc_pl, linestyle='-', linewidth=1, marker='', color='steelblue', label='no control')
     #plt.plot(freq, H[0], linestyle='-', linewidth=1, marker='', color='steelblue', label='FSF control')
-    plt.plot(freq, H[5], linestyle='-', linewidth=1, marker='', color='steelblue', label='x$_{out}$ = x$_{pl}$')
+    plt.plot(freq, H[5], linestyle='-', linewidth=1, marker='', color='coral', label='FSF, x$_{out}$ = x$_{pl}$')
     plt.legend()
 
     plt.show()
 
     # -----------------------Plot time evolution-------------------#
-    # fig = plt.figure(figsize=(12,10))
-    plt.title('Time evolution for SR (FSF control)')
-    plt.xlabel('Time [s]')
-    plt.ylabel('x [m]')
-    plt.grid(True)
+    #load data time evol not controlled
+    _, xnc_1, xnc_pl = np.loadtxt('../../data/timeEvol_noControl.txt',unpack=True)
+
+    fig = plt.figure(figsize=(5, 5))
+    plt.title('Time evolution (FSF control)', size=13)
+    plt.xlabel('Time [s]', size=12)
+    plt.ylabel('x [m]', size=12)
+    plt.grid(True, ls='-', alpha=0.3, lw=0.5)  # , which='both',ls='-', alpha=0.3, lw=0.5)
     plt.minorticks_on()
 
     plt.plot(tt, x1, linestyle='-', linewidth=1, marker='', color='steelblue', label='x1, M$_1$')
@@ -251,7 +252,10 @@ if __name__ == '__main__':
     plt.plot(tt, x3, linestyle='-', linewidth=1, marker='', color='red', label='x3, M$_3$')
     plt.plot(tt, x4, linestyle='-', linewidth=1, marker='', color='green', label='x4, M$_4$')
     plt.plot(tt, x5, linestyle='-', linewidth=1, marker='', color='darkmagenta', label='x7, M$_7$')
-    plt.plot(tt, x6, linestyle='-', linewidth=1, marker='', color='pink', label='x$_{pl}$, M$_{pl}$')
+    plt.plot(tt, x6, linestyle='-', linewidth=1, marker='', color='coral', label='x$_{pl}$, M$_{pl}$')
+
+    #plt.plot(tt, xnc_pl, linestyle='-', linewidth=1, marker='', color='steelblue', label='no control, x$_{pl}$')
+
     plt.legend()
 
     plt.show()

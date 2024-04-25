@@ -30,11 +30,11 @@ def AR_model(y, A, B, u):
     return A @ y + B * u  #nd array of y at instant n+1
 
 #--------------------------Right Hand Side------------------------#
-def matrix(gamma, M1, M2, K1, K2, dt):
+def matrix(gamma, M1, M2, K1, K2, K3, dt):
 
     #defne the rows of the matrix A
-    A_row1 = [1-(2*dt*gamma/M1), dt*gamma/M1, -dt*(K1+K2)/M1, dt*K2/M1]
-    A_row2 = [dt*gamma/M2, 1-(dt*gamma/M2), dt*K2/M2, -dt*K2/M2 ]
+    A_row1 = [1-(dt*gamma/M1), dt*gamma/M1, -dt*(K1+K2)/M1, dt*K2/M1]
+    A_row2 = [dt*gamma/M2, 1-(dt*gamma/M2), dt*K2/M2, -dt*(K2+K3)/M2 ]
     A_row3 = [dt, 0, 1, 0]
     A_row4 = [0, dt, 0, 1]
 
@@ -55,7 +55,7 @@ def evolution(evol_method, Nt_step, dt, physical_params, signal_params, F, file_
     #-----------------Initialize the problem-------------------#
     tmax = dt * Nt_step                #total time of simulation
     tt = np.arange(0, tmax, dt)        #temporal grid
-    y0 = np.array((0, 0, 0, 0))        #initial condition
+    y0 = np.array((0, 0, -1, 0.4))        #initial condition
     y_t = np.copy(y0)                  #create a copy to evolve it in time
     F_signal = F(tt, *signal_params)   #external force applied to the system in time
     #----------------------------------------------------------#
@@ -89,26 +89,27 @@ if __name__ == '__main__':
 
     #Parameters of the simulation
     Nt_step = 1e6     #temporal steps
-    dt = 1e-2         #temporal step size
+    dt = 1e-3         #temporal step size
 
     #Parameters of the system
-    gamma = 0.2     #viscous friction coeff [kg/m*s]
-    M1 = 20         #filter mass [Kg]
-    M2 = 20
-    K1 = 10         #spring constant [N/m]
-    K2 = 10
+    gamma = 0     #viscous friction coeff [kg/m*s]
+    M1 = 10        #filter mass [Kg]
+    M2 = 10
+    K1 = 1        #spring constant [N/m]
+    K2 = 1
+    K3 = 0
     t0 = 0          #parameter of the step function [s]
-    F0 = 2          #amplitude of the external force
+    F0 = 0          #amplitude of the external force
     w = 10          #f of the ext force
 
     #Signal applied to the system
     F = sin_function
 
     #Simulation
-    physical_params = [gamma, M1, M2, K1, K2, dt]
+    physical_params = [gamma, M1, M2, K1, K2, K3, dt]
     signal_params = [F0, w]
     simulation_params = [AR_model, Nt_step, dt]
-    tt, v1, v2, x1, x2 = evolution(*simulation_params, physical_params, signal_params, F, file_name ='data2M.txt')
+    tt, v1, v2, x1, x2 = evolution(*simulation_params, physical_params, signal_params, F, file_name =None)
 
     # --------------------------Plot results----------------------#
     #fig = plt.figure(figsize=(12,10))
@@ -125,6 +126,6 @@ if __name__ == '__main__':
 
     #save the plot in the results dir
     out_name = os.path.join(results_dir, "SinResp_2M.png")
-    plt.savefig(out_name)
+    #plt.savefig(out_name)
     plt.show()
 

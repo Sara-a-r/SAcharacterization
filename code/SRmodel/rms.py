@@ -8,6 +8,7 @@ seism = np.loadtxt('../../data/env_ceb_seis_v.txt')                             
 freq, Tfnc_1, Tfnc_pl = np.loadtxt('../../data/TFnoControl.txt',unpack=True)   # TF not controlled
 _, Tfc_1, Tfc_pl = np.loadtxt('../../data/TF_FSFcontrol.txt',unpack=True)   # TF FSF control
 
+seism = seism * 1.36567e-10
 # seismometer ASD
 _, Pxx = signal.welch(seism, fs=50., window='hann', nperseg= 2 ** 14)
 
@@ -38,6 +39,7 @@ plt.xlabel('f [Hz]')
 plt.ylabel('ASD [m/$\sqrt{Hz}$]')
 plt.yscale('log')
 plt.xscale('log')
+#plt.ylim(1e-7, 1e6)
 plt.grid(True)
 plt.minorticks_on()
 

@@ -45,7 +45,7 @@ def Matrices(M1, M2, M3, M4, M5, K1, K2, K3, K4, K5, g2, g3, g4, g5):
 
 if __name__ == '__main__':
     # define the parameters of the system
-    gamma = [0.5, 0.5, 0.5, 0.5]              # viscous friction coeff [kg/m*s]
+    gamma = [5, 5, 5, 5]              # viscous friction coeff [kg/m*s]
     M = [173, 165, 140, 118, 315]                  # filter mass [Kg]
     K = [ 702.63612454,  859.32565959, 2623.82233935, 1424.4203582,  1968.15021859]                     # spring constant [N/m]
     # compute the transfer function
@@ -65,7 +65,7 @@ if __name__ == '__main__':
     plt.title('Poles of the system',size=11)
     plt.xlabel('$\sigma$ (real part)')
     plt.ylabel('$j \omega$ (imaginary part)')
-    plt.xlim(-0.007, 0.007)
+    plt.xlim(-0.07, 0.07)
     plt.ylim(-8, 8)
     plt.grid(True)
     plt.minorticks_on()

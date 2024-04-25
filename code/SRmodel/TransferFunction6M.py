@@ -59,7 +59,7 @@ def Bode(Tf):
 
 if __name__ == '__main__':
     # create an array of frequencies
-    f = np.linspace(1e-2,1e1,10000)
+    f = np.arange(1e-2,1e1,0.003)
     w = 2*np.pi*f
     # define the parameters of the system
     gamma = [5, 5, 5, 5, 5]              # viscous friction coeff [kg/m*s]
@@ -72,8 +72,11 @@ if __name__ == '__main__':
 
     # compute the transfer function
     Tf = TransferFunc(w, *M, *K, *gamma)
+    #Tfpl = Tf[5]-Tf[0]
     # compute the magnitude of the transfer function
-    H = (np.real(Tf)**2+np.imag(Tf)**2)**(1/2)
+    #H = (np.real(Tf)**2+np.imag(Tf)**2)**(1/2)
+
+    H = (np.real(Tf) ** 2 + np.imag(Tf) ** 2) ** (1 / 2)
 
     A = Bode(Tf)
 
@@ -82,16 +85,17 @@ if __name__ == '__main__':
     Tf_m = Tf_m * (1/402)  #rescaling factor
 
     # --------------------------Plot results----------------------#
-    #fig = plt.figure(figsize=(10, 7))
-    plt.title('Transfer function of SR\n M$_1$=%d, M$_2$=%d, M$_3$=%d, M$_4$=%d, M$_7$=%d, M$_{pl}$=%d, K$_1$=%d,'
-              'K$_2$=%d, K$_3$=%d, K$_4$=%d, K$_5$=%d, K$_6$=%d, $\gamma$=%.1f' % (M[0],M[1], M[2], M[3], M[4], M[5], K[0], K[1], K[2],
-            K[3], K[4], K[5], gamma[0]),
-              size=11)
-    plt.xlabel('f [Hz]')
-    plt.ylabel('|x$_{out}$/x$_0$|')
+    fig = plt.figure(figsize=(9, 5))
+    plt.title('Data vs model: TF of SR chain',
+              #'\n M$_1$=%d, M$_2$=%d, M$_3$=%d, M$_4$=%d, M$_7$=%d, M$_{pl}$=%d, K$_1$=%d,'
+              #'K$_2$=%d, K$_3$=%d, K$_4$=%d, K$_5$=%d, K$_6$=%d, $\gamma$=%.1f' % (M[0],M[1], M[2], M[3], M[4], M[5], K[0], K[1], K[2],
+            #K[3], K[4], K[5], gamma[0]),
+              size=13)
+    plt.xlabel('Frequency [Hz]', size=12)
+    plt.ylabel('|x$_{out}$/x$_0$|', size=12)
     plt.yscale('log')
     plt.xscale('log')
-    plt.grid(True)
+    plt.grid(True, which='both',ls='-', alpha=0.3, lw=0.5)
     plt.minorticks_on()
 
     plt.plot(f, H[0], linestyle='-', linewidth=1, marker='', color='steelblue', label='output $x_1$')
@@ -101,7 +105,7 @@ if __name__ == '__main__':
     #plt.plot(f, H[4], linestyle='-', linewidth=1, marker='', color='lime', label='output $x_7$')
     #plt.plot(f, H[5], linestyle='-', linewidth=1, marker='', color='pink', label='output $x_{pl}$')
 
-    plt.plot(ff, Tf_m, linestyle='-', linewidth=1, marker='', color='red', label='open loop data')
+    plt.plot(ff, Tf_m, linestyle='-', linewidth=1, marker='', color='tomato', label='open loop data')
     plt.legend()
 
     #save the plot in the results dir

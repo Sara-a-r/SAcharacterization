@@ -103,7 +103,3 @@ if __name__ == '__main__':
     #plt.plot(data_t)
 
     #plt.show()
-
-    # Definizione delle costanti M1, M2, M3, M4, M5
-    M = [173, 165, 140, 118, 315]
-    w_values = [0.69, 1.01, 2.20, 3.33, 5.47]

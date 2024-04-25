@@ -137,7 +137,7 @@ def TransferFunc (w, M1, M2, M3, M4, M5, M6, K1, K2, K3, K4, K5, K6, g2, g3, g4,
 #---------------------Controller Transfer function---------------------#
 def Controller_Tf(w, kp, ki, kd):
     s = 1j * w
-    return kp + (ki/s) + (kd * s)
+    return ( kp + (ki/s) + (kd * s) ) #* (1+0.05*s+0.2*s**2)/(1+0.02*s+0.6*s**2)
 
 
 if __name__ == '__main__':
@@ -152,14 +152,14 @@ if __name__ == '__main__':
 
     #Parameters of the system
     gamma = [5, 5, 5, 5, 5]  # viscous friction coeff [kg/m*s]
-    M = [160, 155, 135, 128, 400, 125]  # filter mass [Kg]  [M1, M2, M3, M4, M7, Mpayload]
-    K = [900, 1900, 3800, 2000, 3700, 875]  # spring constant [N/m]  [K1, K2, K3, K4, K5, K6]
+    M = [160, 125, 120, 110, 325, 82]  # filter mass [Kg]  [M1, M2, M3, M4, M7, Mpayload]
+    K = [700, 1500, 3300, 1500, 3400, 564]  # spring constant [N/m]  [K1, K2, K3, K4, K5, K6]
 
     #Parameters of control
     ref = 0                                     # reference signal for x1
-    kp = 600.
-    ki = 1.
-    kd = 1000.
+    kp = 0.5
+    ki = 0.
+    kd = 0.7
     control_params_PID = [ref, kp, ki, kd]
 
     #Simulation
@@ -207,9 +207,10 @@ if __name__ == '__main__':
     plt.minorticks_on()
 
     #plt.plot(f, Tf[0], linestyle='-', linewidth=1, marker='', color='red', label='output $x_1$')
-    #plt.plot(f, Tf_ol[0], linestyle='-', linewidth=1, marker='', color='steelblue', label='output $x_1$')
-    plt.plot(f, Tf_cl[0], linestyle='-', linewidth=1, marker='', color='green', label='output $x_1$')
+    plt.plot(f, Tf_ol[0], linestyle='-', linewidth=1, marker='', color='red', label='open loop Tf')
+    plt.plot(f, Tf_cl[0], linestyle='-', linewidth=1, marker='', color='green', label='close loop Tf')
     #plt.plot(f, np.sqrt((np.real(C))**2+(np.imag(C))**2), linestyle='-', linewidth=1, marker='', color='pink', label='output $x_1$')
+    plt.legend()
 
     plt.show()
 
@@ -217,7 +218,7 @@ if __name__ == '__main__':
     #fig = plt.figure(figsize=(12,10))
     #plt.title('PID control for five coupled oscillators \n x$_1^{ref}$=%.1f, k$_p$=%.1f, k$_i$=%.1f, k$_d$=%.1f'
     #          %(control_params_PID[0], control_params_PID[1], control_params_PID[2], control_params_PID[3]), size=11)
-    plt.title('Time evolution for five coupled oscillators')
+    plt.title('Time evolution for six coupled oscillators')
     plt.xlabel('Time [s]')
     plt.ylabel('position [m]')
     plt.grid(True)

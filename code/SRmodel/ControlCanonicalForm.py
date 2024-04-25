@@ -18,25 +18,27 @@ if not os.path.exists(data_dir):                 #if the directory does not exis
 
 #-----------------------state space description----------------------#
 #@njit
-def matrices (M1, M2, M3, M4, M5, K1, K2, K3, K4, K5, g2, g3, g4, g5):
+def matrices (M1, M2, M3, M4, M5, M6, K1, K2, K3, K4, K5, K6, g2, g3, g4, g5, g6):
     #define the matrices of the system from the state-space equations
-    Id = np.eye(5)
-    V = np.array([[-(g2 / M1), g2 / M1, 0, 0, 0],
-                  [g2 / M2, -(g2 + g3) / M2, g3 / M2, 0, 0],
-                  [0, g3 / M3, -(g3 + g4) / M3, g4 / M3, 0],
-                  [0, 0, g4 / M4, -(g4 + g5) / M4, g5 / M4],
-                  [0, 0, 0, g5 / M5, -g5 / M5]])
-    X = np.array([[-(K1 + K2) / M1, K2 / M1, 0, 0, 0],
-                  [K1 / M2, -(K2 + K3) / M2, K3 / M2, 0, 0],
-                  [0, K3 / M3, -(K3 + K4) / M3, K4 / M3, 0],
-                  [0, 0, K4 / M4, -(K4 + K5) / M4, K5 / M4],
-                  [0, 0, 0, K5 / M5, -K5 / M5]])
+    Id = np.eye(6)
+    V = np.array([[-(g2 / M1), g2 / M1, 0, 0, 0, 0],
+                  [g2 / M2, -(g2 + g3) / M2, g3 / M2, 0, 0, 0],
+                  [0, g3 / M3, -(g3 + g4) / M3, g4 / M3, 0, 0],
+                  [0, 0, g4 / M4, -(g4 + g5) / M4, g5 / M4, 0],
+                  [0, 0, 0, g5 / M5, -(g5 + g6) / M5, g6 / M5],
+                  [0, 0, 0, 0, g6 / M6, -g6 / M6]])
+    X = np.array([[-(K1 + K2) / M1, K2 / M1, 0, 0, 0, 0],
+                  [K2 / M2, -(K2 + K3) / M2, K3 / M2, 0, 0, 0],
+                  [0, K3 / M3, -(K3 + K4) / M3, K4 / M3, 0, 0],
+                  [0, 0, K4 / M4, -(K4 + K5) / M4, K5 / M4, 0],
+                  [0, 0, 0, K5 / M5, -(K5 + K6) / M5, K6 / M5],
+                  [0, 0, 0, 0, K6 / M6, -K6 / M6]])
     A = np.block([[V, X],
                   [Id, 0 * Id]])
 
-    B = np.array([[K1 / M1], [0], [0], [0], [0], [0], [0], [0], [0], [0]])
-    C = np.block([0*Id, Id])
-    D = np.zeros((5, 1))
+    B = np.array([[K1 / M1], [0], [0], [0], [0], [0], [0], [0], [0], [0], [0], [0]])
+    C = np.block([0 * Id, Id])
+    D = np.array([[0], [0], [0], [0], [0], [0]])
 
     return A, B, C, D
 
@@ -53,7 +55,7 @@ def ctrl_martix(A, B):
 def matrices_c(Ctrl, A, B, C, D):
     n = A.shape[0]
     # compute the transformation matrix
-    t_n = np.array([0,0,0,0,0,0,0,0,0,1]) @ np.linalg.inv(Ctrl)
+    t_n = np.array([0,0,0,0,0,0,0,0,0,0,0,1]) @ np.linalg.inv(Ctrl)
     T_inv = t_n @ np.linalg.matrix_power(A,n-1)    #first row of T_inv matrix
     for i in range(2,n+1):
         T_inv = np.vstack((T_inv,t_n @ np.linalg.matrix_power(A,n-i)))
@@ -68,9 +70,9 @@ def matrices_c(Ctrl, A, B, C, D):
 
 if __name__ == '__main__':
     # define the parameters of the system
-    gamma = [0.5, 0.5, 0.5, 0.5]  # viscous friction coeff [kg/m*s]
-    M = [173, 165, 140, 118, 315]  # filter mass [Kg]
-    K = [240.1762472, 1591.49007496, 1765.26873492, 309.85508443, 3920.7499088]  # spring constant [N/m]
+    gamma = [5, 5, 5, 5,5]  # viscous friction coeff [kg/m*s]
+    M = [160, 125, 120, 110, 325, 82]  # filter mass [Kg]  [M1, M2, M3, M4, M7, Mpayload]
+    K = [700, 1500, 3300, 1500, 3400, 564]  # spring constant [N/m]  [K1, K2, K3, K4, K5, K6]
 
     # compute the state space matrices
     A, B, C, D = matrices(*M, *K, *gamma)

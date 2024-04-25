@@ -49,7 +49,7 @@ def matrix(M1, M2, M3, M4, M5, M6, K1, K2, K3, K4, K5, K6, g2, g3, g4, g5, g6, d
     A = np.block([[V, X],
                   [dt*Id, Id]])
 
-    B = np.array((dt*K1/M1,0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0))
+    B = np.array((dt/M1,0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0))
     return A, B
 #----------------------------Step function------------------------#
 def step_function(t, t0=0):
@@ -64,7 +64,7 @@ def evolution(evol_method, Nt_step, dt, physical_params, signal_params, F, file_
     #-----------------Initialize the problem-------------------#
     tmax = dt * Nt_step                                  # total time of simulation
     tt = np.arange(0, tmax, dt)                          # temporal grid
-    y0 = np.array((0, 0, 0, 0, 0, 0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6))  # initial condition
+    y0 = np.array((0, 0, 0, 0, 0, 0, 0., 0., 0., 0., 0., 0.))  # initial condition
     y_t = np.copy(y0)                                    # create a copy to evolve it in time
     F_signal = F(tt, *signal_params)                     # external force applied to the system in time
     #----------------------------------------------------------#
@@ -107,17 +107,16 @@ def evolution(evol_method, Nt_step, dt, physical_params, signal_params, F, file_
 if __name__ == '__main__':
 
     # Parameters of the simulation
-    Nt_step = 5e5     #temporal steps
+    Nt_step = 2e5     #temporal steps
     dt = 1e-3         #temporal step size
 
     # Parameters of the system
-    gamma = [4, 4, 4, 4, 4]                    # viscous friction coeff [kg/m*s]
-    M = [173, 165, 140, 118, 315, 125]                   # filter mass [Kg]  [M1, M2, M3, M4, M7, Mpayload]
-    K = [1623.75124242, 3706.96969851, 600.49266591,
-         4223.06657828, 1161.6710071, 1598.0074804]      # spring constant [N/m]  [K1, K2, K3, K4, K5, K6]
+    gamma = [5, 5, 5, 5, 5]                    # viscous friction coeff [kg/m*s]
+    M = [160, 125, 120, 110, 325, 82]                   # filter mass [Kg]  [M1, M2, M3, M4, M7, Mpayload]
+    K = [700, 1500, 3300, 1500, 3400, 564]      # spring constant [N/m]  [K1, K2, K3, K4, K5, K6]
     t0 = 0                                               # parameter of the step function [s]
-    F0 = 0                                               # amplitude of the external force #Note : consider also the coeff in B
-    w = 10                                               # f of the ext force
+    F0 = K[0]                                              # amplitude of the external force #Note : consider also the coeff in B
+    w = 2*np.pi*0.16                                               # f of the ext force
 
     # Signal applied to the system
     F = sin_function
@@ -130,13 +129,17 @@ if __name__ == '__main__':
                                         physical_params, signal_params, F, file_name = None)
 
     # calculate the differences (signal similar to the LVDT)
-    x0 = np.zeros(len(x1))
+    tmax = dt * Nt_step  # total time of simulation
+    tt = np.arange(0, tmax, dt)
+    x0 = np.sin(w*tt) #np.zeros(len(x1))
     l1 = x1 - x0    #F0_LVDT
     l2 = x2 - x1    #F1_LVDT
     l3 = x3 - x2    #F2_LVDT
     l4 = x4 - x3    #F3_LVDT
     l5 = x5 - x4    #F4_LVDT
     l7 = x5 - x0    #F7_LVDT
+
+    sumL7 = l1+l2+l3+l4+l5
 
     #--------------------------------PSD---------------------------------#
     #nperseg = 2 ** 20
@@ -148,21 +151,30 @@ if __name__ == '__main__':
     #_, Pxx7 = signal.welch(l7, fs=1 / dt, window='hann', nperseg=nperseg)
 
     # --------------------------Plot results----------------------#
-    #fig = plt.figure(figsize=(12,10))
-    plt.title('Time evolution for SR (AR model)')
-    plt.xlabel('Time [s]')
-    plt.ylabel('$\Delta x$ [m]')
-    plt.grid(True)
+    fig = plt.figure(figsize=(5,5))
+    plt.title('Time evolution for SR', size=13)
+    plt.xlabel('Time [s]', size=12)
+    plt.ylabel('$\Delta x$ [m]', size=12)
+    plt.grid(True, ls='-', alpha=0.3, lw=0.5)#, which='both',ls='-', alpha=0.3, lw=0.5)
     plt.minorticks_on()
 
-    plt.plot(tt, l1, linestyle='-', linewidth=1, marker='', color='steelblue', label='l1, F0_LVDT')
-    plt.plot(tt, l2, linestyle='-', linewidth=1, marker='', color='black', label='l2, F1_LVDT')
-    plt.plot(tt, l3, linestyle='-', linewidth=1, marker='', color='red', label='l3, F2_LVDT')
-    plt.plot(tt, l4, linestyle='-', linewidth=1, marker='', color='green', label='l4, F3_LVDT')
-    plt.plot(tt, l5, linestyle='-', linewidth=1, marker='', color='darkmagenta', label='l5, F4_LVDT')
-    plt.plot(tt, l7, linestyle='-', linewidth=1, marker='', color='pink', label='l7, F7_LVDT')
-    plt.legend()
+    #plt.plot(tt, x1, linestyle='-', linewidth=1, marker='', color='pink', label='x$_1$, M$_1$')
+    #plt.plot(tt, x2, linestyle='-', linewidth=1, marker='', color='black', label='x$_2$, M$_2$')
+    #plt.plot(tt, x3, linestyle='-', linewidth=1, marker='', color='red', label='x$_3$, M$_3$')
+    #plt.plot(tt, x4, linestyle='-', linewidth=1, marker='', color='green', label='x$_4$, M$_4$')
+    #plt.plot(tt, x5, linestyle='-', linewidth=1, marker='', color='darkmagenta', label='x$_5$, M$_7$')
+    #plt.plot(tt, x6, linestyle='-', linewidth=1, marker='', color='steelblue', label='x$_6$, M$_{pl}$')
+    #plt.legend()
     #plt.tight_layout()
+
+    #plt.plot(tt, l1, linestyle='-', linewidth=1, marker='', color='pink', label='L$_0$, F0_LVDT')
+    #plt.plot(tt, l2, linestyle='-', linewidth=1, marker='', color='black', label='L$_1$, F1_LVDT')
+    #plt.plot(tt, l3, linestyle='-', linewidth=1, marker='', color='red', label='L$_2$, F2_LVDT')
+    #plt.plot(tt, l4, linestyle='-', linewidth=1, marker='', color='green', label='L$_3$, F3_LVDT')
+    #plt.plot(tt, l5, linestyle='-', linewidth=1, marker='', color='darkmagenta', label='L$_4$, F4_LVDT')
+    #plt.plot(tt, l7, linestyle='-', linewidth=1, marker='', color='steelblue', label='L$_7$, F7_LVDT')
+    #plt.plot(tt, sumL7, linestyle='-', linewidth=1, marker='', color='orange', label='sum')
+    plt.legend()
 
     plt.show()
 
