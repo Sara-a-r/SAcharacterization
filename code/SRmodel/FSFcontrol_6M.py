@@ -51,7 +51,8 @@ def Kmatrix(A, B, C, D, dpoles):
     desired_poles = np.array(dpoles)
 
     # compute the gain
-    k = ct.acker(A, B, desired_poles)  #ct.place
+    k = ct.acker(A, B, desired_poles)  # use ct.place() in a broader case. It implements the Tits and Yang algorithm.
+                                       # It will handle SISO, MISO, and MIMO systems
 
     return k
 
