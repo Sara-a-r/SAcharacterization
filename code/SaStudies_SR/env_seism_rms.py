@@ -4,7 +4,7 @@ from scipy import signal
 import matplotlib.pyplot as plt
 
 # import data
-data = np.loadtxt('../../data/env_ceb_seis_v.txt')     # data are expressed in m/s^2 (velocity)
+data = np.loadtxt('../../data/env_ceb_seis_v.txt')     # data are expressed in m/s^-2
 data = data * 1.36567e-10
 
 # evaluate PSD (spectrum of seismometer)
@@ -18,7 +18,7 @@ f = f[1:] # remove f = 0 (problems when there is the division)
 Pxx = Pxx[1:]
 
 w = 2*np.pi*f
-Pxx = Pxx/w**2  # convert velocity spectrum in displacement
+Pxx = Pxx/w**2  # convert seism spectrum in displacement
 
 # cumulated RMS
 df = np.diff(f)

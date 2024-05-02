@@ -4,7 +4,7 @@ from scipy import signal
 import matplotlib.pyplot as plt
 
 # import data
-seism = np.loadtxt('../../data/env_ceb_seis_v.txt')                                # data are expressed in m/s^2 (velocity)
+seism = np.loadtxt('../../data/env_ceb_seis_v.txt')                                # data are expressed in m/s^2
 freq, Tfnc_1, Tfnc_pl = np.loadtxt('../../data/TFnoControl.txt',unpack=True)   # TF not controlled
 _, Tfc_1, Tfc_pl = np.loadtxt('../../data/TF_FSFcontrol.txt',unpack=True)   # TF FSF control
 
@@ -16,7 +16,7 @@ freq = freq[1:] # remove f = 0 (problems when there is the division)
 Pxx = Pxx[1:]
 
 w = 2*np.pi*freq
-Pxx = Pxx/w**2  # convert velocity spectrum in displacement
+Pxx = Pxx/w**2  # convert seism spectrum in displacement
 
 ASDseism = np.sqrt(Pxx)
 
